@@ -44,7 +44,7 @@ html,body{height:100%;background:var(--bg0);color:var(--t1);font-family:var(--sa
 .page.show{display:block}
 
 /* ── TABBAR ── */
-.tabbar{flex-shrink:0;background:var(--bg1);border-top:1px solid var(--b1);display:grid;grid-template-columns:repeat(3,1fr);padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -1px 8px rgba(0,0,0,.06)}
+.tabbar{flex-shrink:0;background:var(--bg1);border-top:1px solid var(--b1);display:grid;grid-template-columns:repeat(4,1fr);padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -1px 8px rgba(0,0,0,.06)}
 .ti{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0;cursor:pointer;color:var(--t3);transition:.15s;position:relative}
 .ti svg{width:19px;height:19px;stroke-width:1.6;transition:.15s}
 .ti span{font-size:9px;font-weight:600;letter-spacing:.4px;text-transform:uppercase}
@@ -115,7 +115,11 @@ html,body{height:100%;background:var(--bg0);color:var(--t1);font-family:var(--sa
 .pc-ml{font-size:9px;color:var(--t3);font-weight:500;margin-bottom:3px;white-space:nowrap}
 .pc-mv{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--t1)}
 
-/* ── OPEN ORDERS ── */
+/* Funding rate row */
+.pc-funding{display:flex;align-items:center;gap:6px;padding:7px 13px;background:var(--bg3);border-top:1px solid var(--b1)}
+.pc-funding-item{display:flex;align-items:center;gap:6px;font-size:10px}
+.pc-funding-l{color:var(--t3);font-weight:500}
+.pc-funding-v{font-family:var(--mono);font-weight:700;font-size:10.5px}
 .oo-card{background:var(--bg1);border:1px solid var(--b1);border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
 .oo-item{display:flex;align-items:center;justify-content:space-between;padding:10px 13px;border-bottom:1px solid var(--b1);transition:.1s}
 .oo-item:last-child{border-bottom:none}
@@ -178,37 +182,59 @@ html,body{height:100%;background:var(--bg0);color:var(--t1);font-family:var(--sa
 .bc-lbl{font-size:8px;color:var(--t3);font-family:var(--mono)}
 .bc-num{font-size:7px;color:var(--t3);font-family:var(--mono);white-space:nowrap;max-width:100%;overflow:hidden;text-align:center}
 
-/* CALENDAR */
-.cal{background:var(--bg1);border:1px solid var(--b1);border-radius:12px;padding:11px 11px 0;margin-bottom:9px;box-shadow:var(--shadow);overflow:hidden}
-.cal-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
-.cal-m{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--t1)}
-.cal-btn{width:24px;height:24px;background:var(--bg3);border:1px solid var(--b1);border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t2);font-size:14px;transition:.12s;user-select:none}
-.cal-btn:active{transform:scale(.88)}
-.cal-dows{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;margin-bottom:3px}
-.cal-dow{font-size:8px;font-weight:600;color:var(--t3);padding:2px 0;text-transform:uppercase}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px}
-/* Day cells: plain, NO color change, PnL text inside */
-.cc{height:38px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:5px;cursor:pointer;transition:.12s;padding:2px 1px}
-.cc.empty{pointer-events:none;opacity:0}
-.cc-num{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--t3);line-height:1.1}
-.cc-pnl{font-size:6.5px;font-weight:700;font-family:var(--mono);color:transparent;line-height:1;margin-top:1px}
-.cc.has-data .cc-num{color:var(--t1);font-weight:700}
-.cc.has-data.profit .cc-pnl{color:var(--g)}
-.cc.has-data.loss .cc-pnl{color:var(--r)}
-.cc.today .cc-num{color:var(--a);font-weight:800}
-.cc.today{background:rgba(37,99,235,.06);outline:1.5px solid rgba(37,99,235,.3);outline-offset:-1px}
-.cc.sel{background:var(--ad)}
-.cc.sel .cc-num{color:var(--a)}
-.cc:not(.empty):hover{background:var(--bg3)}
-/* Monthly summary bar */
-.cal-monthly{display:flex;align-items:center;justify-content:space-between;padding:10px 11px;background:var(--bg3);border-top:1px solid var(--b1);margin-top:1px}
-.cm-l{font-size:9px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
-.cm-d{font-size:9px;color:var(--t3)}
-.cm-v{font-family:var(--mono);font-size:14px;font-weight:800}
-.dpop{margin:0 11px 11px;background:var(--bg3);border:1px solid var(--b2);border-radius:9px;padding:10px;display:none}
+/* ── DAILY PNL CALENDAR ── */
+.dpnl-card{background:var(--bg1);border:1px solid var(--b1);border-radius:14px;overflow:hidden;box-shadow:var(--shadow-md);margin-bottom:9px;position:relative}
+.dpnl-header{display:flex;align-items:center;justify-content:space-between;padding:13px 14px 10px}
+.dpnl-title{font-size:15px;font-weight:700;color:var(--t1)}
+.dpnl-nav{display:flex;align-items:center;gap:6px}
+.dpnl-nav-btn{width:26px;height:26px;background:var(--bg3);border:1px solid var(--b1);border-radius:7px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t2);font-size:16px;line-height:1;transition:.12s;user-select:none;font-weight:300}
+.dpnl-nav-btn:active{transform:scale(.88);background:var(--bg4)}
+.dpnl-month-btn{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--t1);padding:4px 10px;background:var(--bg3);border:1px solid var(--b1);border-radius:7px;cursor:pointer;transition:.12s;min-width:90px;text-align:center}
+.dpnl-month-btn:hover{background:var(--bg4)}
+
+/* Month picker overlay */
+.month-picker{position:absolute;top:52px;right:14px;background:var(--bg1);border:1px solid var(--b2);border-radius:12px;box-shadow:var(--shadow-md);z-index:50;padding:12px;width:220px}
+.mp-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.mp-year{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--t1)}
+.mp-year-nav{width:28px;height:28px;background:var(--bg3);border:1px solid var(--b1);border-radius:7px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t2);font-size:17px;line-height:1;transition:.12s;user-select:none}
+.mp-year-nav:active{transform:scale(.88)}
+.mp-months{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.mp-m{padding:7px 4px;text-align:center;border-radius:7px;cursor:pointer;font-size:11px;font-weight:600;color:var(--t2);background:var(--bg3);transition:.12s}
+.mp-m:hover{background:var(--bg4)}
+.mp-m.active{background:var(--ad);color:var(--a);font-weight:700}
+
+/* Day-of-week row */
+.dpnl-dows{display:grid;grid-template-columns:repeat(7,1fr);padding:0 8px;margin-bottom:4px}
+.dpnl-dow{text-align:center;font-size:10px;font-weight:600;color:var(--t3);padding:2px 0}
+
+/* Calendar grid */
+.dpnl-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;padding:0 8px 10px}
+.dc{min-height:52px;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:.12s;padding:4px 2px;gap:2px;background:var(--bg3)}
+.dc.empty{background:transparent;pointer-events:none}
+/* Day number — LUÔN màu đen/tối, không đổi */
+.dc-num{font-size:12px;font-weight:700;color:var(--t1);line-height:1;font-family:var(--mono)}
+/* PnL text — màu xanh/đỏ theo kết quả */
+.dc-pnl{font-size:8.5px;font-weight:700;font-family:var(--mono);line-height:1;color:var(--t3)}
+.dc.win{background:rgba(5,150,105,.1)}
+.dc.win .dc-pnl{color:var(--g)}
+.dc.loss{background:rgba(220,38,38,.08)}
+.dc.loss .dc-pnl{color:var(--r)}
+.dc.zero .dc-pnl{color:var(--t3)}
+/* TODAY — chỉ ring xanh, số vẫn đen */
+.dc.today{outline:2px solid var(--a);outline-offset:-2px}
+.dc:not(.empty):hover{filter:brightness(.94)}
+
+/* Monthly total — đặt TRÊN calendar */
+.dpnl-total{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;background:var(--bg3);border-top:1px solid var(--b1);border-bottom:1px solid var(--b1)}
+.dpnl-total-l{font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.5px}
+.dpnl-total-detail{font-size:9px;color:var(--t3);margin-bottom:2px;text-align:right}
+.dpnl-total-val{font-family:var(--mono);font-size:16px;font-weight:800;text-align:right}
+
+/* Day popup */
+.dpop{margin:0 14px 12px;background:var(--bg3);border:1px solid var(--b2);border-radius:10px;padding:10px;display:none}
 .dpop.open{display:block;animation:fd .15s ease}
 @keyframes fd{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
-.dp-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;padding-bottom:7px;border-bottom:1px solid var(--b1)}
+.dp-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;padding-bottom:6px;border-bottom:1px solid var(--b1)}
 .dp-x{width:20px;height:20px;border-radius:5px;background:var(--bg4);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t2);font-size:12px}
 .dp-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--b1)}
 .dp-row:last-child{border:none}
@@ -293,25 +319,10 @@ html,body{height:100%;background:var(--bg0);color:var(--t1);font-family:var(--sa
       </div>
       <div class="hero-main">
         <div class="hero-num"><sup>$</sup><span id="hTotal">--</span></div>
-        <div class="upnl-badge up" id="hUpnlBadge">-- UPNL</div>
       </div>
-      <div class="hero-row">
+      <div class="hero-row" style="grid-template-columns:1fr 1fr">
         <div class="hg"><div class="hg-l">Số dư USDC</div><div class="hg-v" style="color:var(--a)" id="hUsdc">--</div></div>
-        <div class="hg"><div class="hg-l">Unrealized</div><div class="hg-v" id="hUnreal">--</div></div>
-        <div class="hg"><div class="hg-l">Có thể rút</div><div class="hg-v g" id="hWith">--</div></div>
-      </div>
-    </div>
-
-    <div class="tiles">
-      <div class="tile">
-        <div class="tile-l">Vị thế mở</div>
-        <div class="tile-v" style="color:var(--p)" id="tPos">--</div>
-        <div class="tile-s">Lệnh đặt: <span id="tOo">--</span></div>
-      </div>
-      <div class="tile">
-        <div class="tile-l">PnL hôm nay</div>
-        <div class="tile-v" id="tTodayPnl">--</div>
-        <div class="tile-s" id="tTodayCnt">-- lệnh</div>
+        <div class="hg"><div class="hg-l">Tổng PnL vị thế mở</div><div class="hg-v" id="hOpenPnl">--</div></div>
       </div>
     </div>
 
@@ -326,54 +337,47 @@ html,body{height:100%;background:var(--bg0);color:var(--t1);font-family:var(--sa
   <!-- ═══ HISTORY ═══ -->
   <div class="page" id="pg-hist">
 
-    <div class="date-filter">
-      <div class="df-title">📅 Lọc theo ngày</div>
-      <div class="df-row">
-        <div class="df-field"><label>Từ ngày</label><input type="date" class="df-input" id="dfFrom"></div>
-        <div class="df-field"><label>Đến ngày</label><input type="date" class="df-input" id="dfTo"></div>
-      </div>
-      <div class="df-shorts">
-        <div class="dfs on" data-r="today" onclick="setRange(this)">Hôm nay</div>
-        <div class="dfs" data-r="7d" onclick="setRange(this)">7 ngày</div>
-        <div class="dfs" data-r="30d" onclick="setRange(this)">30 ngày</div>
-        <div class="dfs" data-r="month" onclick="setRange(this)">Tháng này</div>
-        <div class="dfs" data-r="all" onclick="setRange(this)">Tất cả</div>
-      </div>
-    </div>
-
-    <div class="pnl-sum">
-      <div class="ps-top">
-        <div><div class="ps-lbl">PnL khoảng này</div><div class="ps-big" id="psPnl">--</div></div>
-        <div style="text-align:right"><div class="ps-lbl">Win rate</div><div class="ps-wr" id="psWr">--%</div></div>
-      </div>
-      <div class="ps-3">
-        <div class="p3"><div class="p3-l">Thắng</div><div class="p3-v g" id="psW">--</div></div>
-        <div class="p3"><div class="p3-l">Thua</div><div class="p3-v r" id="psL">--</div></div>
-        <div class="p3"><div class="p3-l">Tổng lệnh</div><div class="p3-v" id="psTot">--</div></div>
-      </div>
-    </div>
-
-    <div class="bcw">
-      <div class="bc-h"><div class="bc-tl" id="bcTl">PnL theo ngày</div><div class="bc-tot" id="bcTot">--</div></div>
-      <div class="bc-bars" id="bcBars"><div class="spinrow"><div class="sp"></div></div></div>
-    </div>
-
-    <!-- CALENDAR — plain days, PnL text inside, monthly total below -->
-    <div class="cal">
-      <div class="cal-nav">
-        <div class="cal-btn" onclick="calShift(-1)">&#8249;</div>
-        <div class="cal-m" id="calTitle"></div>
-        <div class="cal-btn" onclick="calShift(1)">&#8250;</div>
-      </div>
-      <div class="cal-dows"><div class="cal-dow">CN</div><div class="cal-dow">T2</div><div class="cal-dow">T3</div><div class="cal-dow">T4</div><div class="cal-dow">T5</div><div class="cal-dow">T6</div><div class="cal-dow">T7</div></div>
-      <div class="cal-grid" id="calGrid"></div>
-      <div class="cal-monthly">
-        <div>
-          <div class="cm-l" id="cmLabel">Tổng tháng</div>
-          <div class="cm-d" id="cmDetail">-- ngày GD</div>
+    <!-- DAILY PNL CALENDAR — like the screenshot -->
+    <div class="dpnl-card">
+      <!-- Header -->
+      <div class="dpnl-header">
+        <div class="dpnl-title">Daily PNL</div>
+        <div class="dpnl-nav">
+          <div class="dpnl-nav-btn" onclick="calShift(-1)">&#8249;</div>
+          <div class="dpnl-month-btn" id="calTitle" onclick="openMonthPicker()"></div>
+          <div class="dpnl-nav-btn" onclick="calShift(1)">&#8250;</div>
         </div>
-        <div class="cm-v" id="cmVal">--</div>
       </div>
+
+      <!-- Month/Year picker overlay -->
+      <div class="month-picker" id="monthPicker" style="display:none">
+        <div class="mp-top">
+          <div class="mp-year-nav" onclick="changePickerYear(-1)">&#8249;</div>
+          <div class="mp-year" id="mpYear"></div>
+          <div class="mp-year-nav" onclick="changePickerYear(1)">&#8250;</div>
+        </div>
+        <div class="mp-months" id="mpMonths"></div>
+      </div>
+
+      <!-- Monthly total — ĐẶT TRÊN calendar -->
+      <div class="dpnl-total" id="dpnlTotalBar">
+        <div class="dpnl-total-l" id="cmLabel">Tổng tháng</div>
+        <div>
+          <div class="dpnl-total-detail" id="cmDetail"></div>
+          <div class="dpnl-total-val" id="cmVal">--</div>
+        </div>
+      </div>
+
+      <!-- Day-of-week header: S M T W T F S -->
+      <div class="dpnl-dows">
+        <div class="dpnl-dow">S</div><div class="dpnl-dow">M</div><div class="dpnl-dow">T</div>
+        <div class="dpnl-dow">W</div><div class="dpnl-dow">T</div><div class="dpnl-dow">F</div><div class="dpnl-dow">S</div>
+      </div>
+
+      <!-- Calendar grid -->
+      <div class="dpnl-grid" id="calGrid"></div>
+
+      <!-- Day detail popup -->
       <div class="dpop" id="dayPop"></div>
     </div>
 
@@ -430,6 +434,35 @@ html,body{height:100%;background:var(--bg0);color:var(--t1);font-family:var(--sa
     <div style="height:6px"></div>
   </div>
 
+  <!-- ═══ NẠP/RÚT ═══ -->
+  <div class="page" id="pg-fund">
+    <div class="sh" style="margin-bottom:10px">
+      <div class="sh-t">Lịch sử nạp / rút</div>
+      <div class="sh-r" id="fundCount">--</div>
+    </div>
+    <!-- Summary tiles -->
+    <div class="tiles" style="margin-bottom:10px">
+      <div class="tile">
+        <div class="tile-l">Tổng nạp</div>
+        <div class="tile-v g" id="fundDeposit">--</div>
+        <div class="tile-s" id="fundDepositCnt">-- lần</div>
+      </div>
+      <div class="tile">
+        <div class="tile-l">Tổng rút</div>
+        <div class="tile-v r" id="fundWithdraw">--</div>
+        <div class="tile-s" id="fundWithdrawCnt">-- lần</div>
+      </div>
+    </div>
+    <!-- Filter chips -->
+    <div class="t-filters" style="padding:0;margin-bottom:8px">
+      <div class="chip on" data-fw="all" onclick="setFundF(this)">Tất cả</div>
+      <div class="chip" data-fw="deposit" onclick="setFundF(this)">Nạp</div>
+      <div class="chip" data-fw="withdraw" onclick="setFundF(this)">Rút</div>
+    </div>
+    <!-- List -->
+    <div class="tcard" id="fundList"><div class="spinrow"><div class="sp"></div>Đang tải...</div></div>
+  </div>
+
 </div><!-- content -->
 
 <div class="tabbar">
@@ -440,6 +473,10 @@ html,body{height:100%;background:var(--bg0);color:var(--t1);font-family:var(--sa
   <div class="ti" id="ti-hist" onclick="goTab('hist')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
     <span>Lịch sử</span>
+  </div>
+  <div class="ti" id="ti-fund" onclick="goTab('fund')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+    <span>Nạp/Rút</span>
   </div>
   <div class="ti" id="ti-set" onclick="goTab('set')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
@@ -456,9 +493,10 @@ html,body{height:100%;background:var(--bg0);color:var(--t1);font-family:var(--sa
 const S={
   wallet:_ls('hl_w')||'',script:_ls('hl_s')||'',sheet:_ls('hl_sh')||'',
   auto:_ls('hl_a')!=='false',int:+(_ls('hl_i')||1000),
-  filter:'all',dateFrom:null,dateTo:null,
+  filter:'all',
   calY:new Date().getFullYear(),calM:new Date().getMonth(),
-  fills:[],dpnl:{},openDay:null,timer:null,tickTimer:null,curTab:'dash'
+  fills:[],dpnl:{},openDay:null,timer:null,tickTimer:null,curTab:'dash',
+  fundsLoaded:false,funds:[],fundFilter:'all'
 };
 function _ls(k,v){if(v===undefined)return localStorage.getItem(k);v===null?localStorage.removeItem(k):localStorage.setItem(k,v);}
 
@@ -479,13 +517,14 @@ function toast(msg,ms=2500){const el=document.getElementById('toastEl');el.textC
 // NAV
 // ══════════════════════════════════════════
 function goTab(n){
-  ['dash','hist','set'].forEach(x=>{
+  ['dash','hist','fund','set'].forEach(x=>{
     document.getElementById('pg-'+x).classList.toggle('show',x===n);
     document.getElementById('ti-'+x).classList.toggle('on',x===n);
   });
   S.curTab=n;
   document.getElementById('content').scrollTop=0;
-  if(n==='hist'){applyRange();renderCal();renderCalMonthly();}
+  if(n==='hist'){renderCal();renderCalMonthly();renderTrades();}
+  if(n==='fund'&&!S.fundsLoaded){loadFund();}
 }
 
 // ══════════════════════════════════════════
@@ -509,8 +548,7 @@ async function loadDash(){
     hl({type:'spotClearinghouseState',user:S.wallet}),
     hl({type:'openOrders',user:S.wallet})
   ]);
-  if(!perp){heroEmpty();setEmp('posList','⚠️','Lỗi kết nối API');return;}
-
+  if(!perp){heroEmpty();setEmp('posList','⚠️','Lỗi kết nối API');setEmp('ooWrap','⚠️','Lỗi API');return;}
   // ── BALANCE ─────────────────────────────────────────────
   // spotClearinghouseState → balances[USDC].total = tổng số dư USDC
   // (bao gồm số dư ví + collateral đang dùng cho perp)
@@ -540,28 +578,10 @@ async function loadDash(){
   // Hero
   document.getElementById('hTotal').textContent=fmt$(totalBalance);
   document.getElementById('hUsdc').textContent='$'+fmt$(usdcPure>0?usdcPure:totalBalance);
+  const hOp=document.getElementById('hOpenPnl');
+  if(hOp){hOp.textContent=(unrealPnl>=0?'+$':'-$')+Math.abs(unrealPnl).toFixed(2);hOp.style.color=unrealPnl>=0?'var(--g)':'var(--r)';}
 
-  const uEl=document.getElementById('hUnreal');
-  uEl.textContent=(unrealPnl>=0?'+$':'-$')+Math.abs(unrealPnl).toFixed(2);
-  uEl.style.color=unrealPnl>=0?'var(--g)':'var(--r)';
-
-  document.getElementById('hWith').textContent='$'+fmt$(Math.max(0,withdrawable));
-
-  const badge=document.getElementById('hUpnlBadge');
-  badge.textContent=(unrealPnl>=0?'+':'')+'$'+unrealPnl.toFixed(2)+' UPNL';
-  badge.className='upnl-badge '+(unrealPnl>=0?'up':'dn');
-
-  // Tiles
-  document.getElementById('tPos').textContent=positions.length;
-  document.getElementById('tOo').textContent=Array.isArray(orders)?orders.length:'0';
-  const todK=dk(new Date());
-  const todF=S.fills.filter(f=>dk(new Date(f.time))===todK);
-  const todPnl=todF.reduce((s,f)=>s+parseFloat(f.closedPnl||0),0);
-  const tpEl=document.getElementById('tTodayPnl');
-  tpEl.textContent=pnlFmt(todPnl);tpEl.style.color=todPnl>=0?'var(--g)':'var(--r)';
-  document.getElementById('tTodayCnt').textContent=todF.length+' lệnh hôm nay';
   document.getElementById('posTs').textContent=new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-
   renderPositions(positions);
   renderOrders(Array.isArray(orders)?orders:[]);
 }
@@ -590,7 +610,7 @@ function renderPositions(positions){
     // Mark price from position if available
     const markPx=parseFloat(pos.markPx||pos.currentPrice||0);
 
-    // Build metrics — only show if value exists
+    // Build metrics
     const metrics=[];
     metrics.push({l:`Size (${coin})`, v: sz.toFixed(sz<1?4:sz<100?3:2)});
     if(mUsed>0) metrics.push({l:'Margin (USDT)', v:'$'+mUsed.toFixed(2)});
@@ -600,6 +620,11 @@ function renderPositions(positions){
 
     // Pad to multiple of 3
     while(metrics.length%3!==0) metrics.push({l:'',v:''});
+
+    // Funding: cumFunding from API
+    const cumFunding=parseFloat(pos.cumFunding?.sinceOpen||0);
+    const cumFundingStr=cumFunding!==0?`${cumFunding>=0?'+':''}$${cumFunding.toFixed(3)}`:'$0.000';
+    const cumFundingColor=cumFunding>=0?'var(--g)':'var(--r)';
 
     return `<div class="pc">
       <div class="pc-header">
@@ -630,6 +655,14 @@ function renderPositions(positions){
 
       <div class="pc-metrics">
         ${metrics.map(m=>m.l?`<div class="pc-m"><div class="pc-ml">${m.l}</div><div class="pc-mv">${m.v}</div></div>`:`<div class="pc-m"></div>`).join('')}
+      </div>
+
+      <!-- Funding row -->
+      <div class="pc-funding">
+        <div class="pc-funding-item">
+          <span class="pc-funding-l">Funding tích lũy</span>
+          <span class="pc-funding-v" style="color:${cumFundingColor}">${cumFundingStr}</span>
+        </div>
       </div>
     </div>`;
   }).join('');
@@ -679,99 +712,55 @@ async function loadHistory(){
   S.fills=Array.isArray(data)?data.sort((a,b)=>b.time-a.time):[];
   S.dpnl={};
   S.fills.forEach(t=>{const k=dk(new Date(t.time));S.dpnl[k]=(S.dpnl[k]||0)+parseFloat(t.closedPnl||0);});
-  if(S.curTab==='hist'){applyRange();renderCal();renderCalMonthly();}
-}
-
-function filteredFills(){
-  return S.fills.filter(f=>{
-    const d=new Date(f.time);
-    if(S.dateFrom&&d<S.dateFrom)return false;
-    if(S.dateTo&&d>S.dateTo)return false;
-    return true;
-  });
-}
-
-function applyRange(){renderPnlSummary();renderBarChart();renderTrades();}
-
-function setRange(el){
-  document.querySelectorAll('.dfs').forEach(e=>e.classList.remove('on'));el.classList.add('on');
-  const r=el.dataset.r,now=new Date(),y=now.getFullYear(),m=now.getMonth(),d=now.getDate();
-  let from,to;
-  if(r==='today'){from=new Date(y,m,d);to=new Date(y,m,d,23,59,59);}
-  else if(r==='7d'){from=new Date(y,m,d-6);to=new Date(y,m,d,23,59,59);}
-  else if(r==='30d'){from=new Date(y,m,d-29);to=new Date(y,m,d,23,59,59);}
-  else if(r==='month'){from=new Date(y,m,1);to=new Date(y,m+1,0,23,59,59);}
-  else{from=null;to=null;}
-  S.dateFrom=from;S.dateTo=to;
-  document.getElementById('dfFrom').value=from?dateFmt(from):'';
-  document.getElementById('dfTo').value=to?dateFmt(to):'';
-  applyRange();
-}
-
-function readDateInputs(){
-  const f=document.getElementById('dfFrom').value,t=document.getElementById('dfTo').value;
-  S.dateFrom=f?new Date(f):null;
-  if(t){const d=new Date(t);d.setHours(23,59,59);S.dateTo=d;}else S.dateTo=null;
-}
-
-function renderPnlSummary(){
-  const ff=filteredFills();
-  let tot=0,w=0,l=0;
-  ff.forEach(t=>{const v=parseFloat(t.closedPnl||0);tot+=v;if(v>0)w++;else if(v<0)l++;});
-  const wr=w+l?Math.round(w/(w+l)*100):0;
-  const pe=document.getElementById('psPnl');pe.textContent=pnlFmt(tot);pe.style.color=tot>=0?'var(--g)':'var(--r)';
-  document.getElementById('psWr').textContent=wr+'%';
-  document.getElementById('psW').textContent=w;
-  document.getElementById('psL').textContent=l;
-  document.getElementById('psTot').textContent=ff.length;
-}
-
-function renderBarChart(){
-  const ff=filteredFills();
-  if(!ff.length){document.getElementById('bcBars').innerHTML=`<div style="display:flex;align-items:center;justify-content:center;flex:1;font-size:11px;color:var(--t3)">Không có dữ liệu</div>`;return;}
-  const dayMap={};
-  ff.forEach(t=>{const k=dk(new Date(t.time));dayMap[k]=(dayMap[k]||0)+parseFloat(t.closedPnl||0);});
-  const days=Object.keys(dayMap).sort().slice(-14);
-  const vals=days.map(k=>dayMap[k]);
-  const mx=Math.max(...vals.map(Math.abs),0.01);
-  const tot=vals.reduce((s,v)=>s+v,0);
-  document.getElementById('bcTl').textContent='PnL '+days.length+' ngày';
-  const bEl=document.getElementById('bcTot');bEl.textContent=pnlFmt(tot);bEl.style.color=tot>=0?'var(--g)':'var(--r)';
-  document.getElementById('bcBars').innerHTML=days.map((k,i)=>{
-    const v=vals[i],h=Math.max(Math.round(Math.abs(v)/mx*54),2);
-    const cls=v>0?'g':v<0?'r':'z';
-    const pts=k.split('-'),lbl=pts[2]+'/'+pts[1];
-    const n=v!==0?(v>0?'+':'')+'$'+Math.abs(v).toFixed(0):'';
-    return `<div class="bc-col"><div class="bc-num">${n}</div><div class="bc-inner"><div class="bc-bar ${cls}" style="height:${h}px"></div></div><div class="bc-lbl">${lbl}</div></div>`;
-  }).join('');
+  if(S.curTab==='hist'){renderCal();renderCalMonthly();renderTrades();}
 }
 
 // ══════════════════════════════════════════
-// CALENDAR
+// CALENDAR — Daily PNL style
 // ══════════════════════════════════════════
 function calShift(dir){
-  S.calM+=dir;if(S.calM>11){S.calM=0;S.calY++;}if(S.calM<0){S.calM=11;S.calY--;}
-  S.openDay=null;document.getElementById('dayPop').classList.remove('open');
+  S.calM+=dir;
+  if(S.calM>11){S.calM=0;S.calY++;}
+  if(S.calM<0){S.calM=11;S.calY--;}
+  S.openDay=null;
+  const pop=document.getElementById('dayPop');
+  if(pop)pop.classList.remove('open');
   renderCal();renderCalMonthly();
 }
 
 function renderCal(){
-  const MN=['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
-  document.getElementById('calTitle').textContent=MN[S.calM]+' '+S.calY;
-  const first=new Date(S.calY,S.calM,1).getDay(),total=new Date(S.calY,S.calM+1,0).getDate(),now=new Date();
-  let html='<div class="cc empty"><div class="cc-num"></div><div class="cc-pnl"></div></div>'.repeat(first);
+  // Title: "2024-06" style like screenshot
+  const yStr=String(S.calY);
+  const mStr=String(S.calM+1).padStart(2,'0');
+  document.getElementById('calTitle').textContent=yStr+'-'+mStr;
+
+  const first=new Date(S.calY,S.calM,1).getDay();
+  const total=new Date(S.calY,S.calM+1,0).getDate();
+  const now=new Date();
+
+  let html='<div class="dc empty"></div>'.repeat(first);
   for(let d=1;d<=total;d++){
-    const k=`${S.calY}-${S.calM+1}-${d}`,pnl=S.dpnl[k];
-    const hasDat=pnl!==undefined,isProfit=hasDat&&pnl>0,isLoss=hasDat&&pnl<0;
+    const k=`${S.calY}-${S.calM+1}-${d}`;
+    const pnl=S.dpnl[k];
     const isToday=now.getFullYear()===S.calY&&now.getMonth()===S.calM&&now.getDate()===d;
-    const isSel=S.openDay===k;
-    let cls='cc';
-    if(hasDat)cls+=' has-data';
-    if(isProfit)cls+=' profit';if(isLoss)cls+=' loss';
-    if(isToday)cls+=' today';if(isSel)cls+=' sel';
+    let cls='dc';
+    if(pnl!==undefined){
+      if(pnl>0)cls+=' win';
+      else if(pnl<0)cls+=' loss';
+      else cls+=' zero';
+    }
+    if(isToday)cls+=' today';
+
+    // PnL display: +0.00 format like screenshot
     let pnlTxt='';
-    if(hasDat){const a=Math.abs(pnl);pnlTxt=(pnl>=0?'+':'-')+(a>=100?Math.round(a)+'':a.toFixed(a<10?1:0));}
-    html+=`<div class="${cls}" onclick="togDay(${d},'${k}')"><div class="cc-num">${d}</div><div class="cc-pnl">${pnlTxt}</div></div>`;
+    if(pnl!==undefined){
+      pnlTxt=(pnl>=0?'+':'')+pnl.toFixed(2);
+    }
+
+    html+=`<div class="${cls}" onclick="togDay(${d},'${k}')">
+      <div class="dc-num">${d}</div>
+      ${pnlTxt?`<div class="dc-pnl">${pnlTxt}</div>`:''}
+    </div>`;
   }
   document.getElementById('calGrid').innerHTML=html;
 }
@@ -783,23 +772,60 @@ function renderCalMonthly(){
     if(+p[0]===S.calY&&+p[1]-1===S.calM){tot+=v;if(v>0)wins++;else if(v<0)loss++;}
   });
   const mn=['T1','T2','T3','T4','T5','T6','T7','T8','T9','T10','T11','T12'];
-  document.getElementById('cmLabel').textContent='Tổng '+mn[S.calM]+'/'+S.calY;
-  document.getElementById('cmDetail').textContent=wins+' ngày lãi · '+loss+' ngày lỗ';
-  const el=document.getElementById('cmVal');el.textContent=pnlFmt(tot);el.style.color=tot>=0?'var(--g)':'var(--r)';
+  const cmL=document.getElementById('cmLabel');
+  if(cmL)cmL.textContent='Tổng '+mn[S.calM]+'/'+S.calY;
+  const cmD=document.getElementById('cmDetail');
+  if(cmD)cmD.textContent=wins+' ngày lãi · '+loss+' ngày lỗ';
+  const el=document.getElementById('cmVal');
+  if(el){el.textContent=pnlFmt(tot);el.style.color=tot>=0?'var(--g)':'var(--r)';}
 }
+
+// MONTH/YEAR PICKER
+let pickerY=new Date().getFullYear();
+function openMonthPicker(){
+  const p=document.getElementById('monthPicker');
+  if(p.style.display==='none'){
+    pickerY=S.calY;
+    renderPicker();
+    p.style.display='block';
+  } else {
+    p.style.display='none';
+  }
+}
+function renderPicker(){
+  document.getElementById('mpYear').textContent=pickerY;
+  const SHORT=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('mpMonths').innerHTML=SHORT.map((m,i)=>
+    `<div class="mp-m${i===S.calM&&pickerY===S.calY?' active':''}" onclick="selectMonth(${i})">${m}</div>`
+  ).join('');
+}
+function changePickerYear(dir){pickerY+=dir;renderPicker();}
+function selectMonth(m){
+  S.calY=pickerY;S.calM=m;
+  document.getElementById('monthPicker').style.display='none';
+  S.openDay=null;
+  const pop=document.getElementById('dayPop');if(pop)pop.classList.remove('open');
+  renderCal();renderCalMonthly();
+}
+// Close picker on outside click
+document.addEventListener('click',function(e){
+  const p=document.getElementById('monthPicker');
+  const btn=document.getElementById('calTitle');
+  if(p&&!p.contains(e.target)&&e.target!==btn)p.style.display='none';
+});
 
 function togDay(d,key){
   const pop=document.getElementById('dayPop');
-  if(S.openDay===key){S.openDay=null;pop.classList.remove('open');renderCal();return;}
+  if(S.openDay===key){S.openDay=null;pop.classList.remove('open');return;}
   S.openDay=key;
-  const pnl=S.dpnl[key],trs=S.fills.filter(t=>dk(new Date(t.time))===key);
-  if(!trs.length&&pnl===undefined){pop.classList.remove('open');renderCal();return;}
-  renderCal();
+  const pnl=S.dpnl[key];
+  const trs=S.fills.filter(t=>dk(new Date(t.time))===key);
+  if(!trs.length&&pnl===undefined){pop.classList.remove('open');return;}
   const pc=(pnl||0)>=0?'var(--g)':'var(--r)';
   pop.classList.add('open');
   pop.innerHTML=`<div class="dp-head">
     <div style="font-size:11.5px;font-weight:700">${d}/${S.calM+1}/${S.calY} · <span style="color:${pc};font-family:var(--mono)">${pnlFmt(pnl||0)}</span> · ${trs.length} lệnh</div>
-    <div class="dp-x" onclick="S.openDay=null;document.getElementById('dayPop').classList.remove('open');renderCal()">✕</div>
+    <div class="dp-x" onclick="S.openDay=null;document.getElementById('dayPop').classList.remove('open')">✕</div>
   </div>
   ${trs.slice(0,8).map(t=>{const v=parseFloat(t.closedPnl||0),c=cx(t.coin);
     return `<div class="dp-row">
@@ -819,7 +845,7 @@ function togDay(d,key){
 function setF(el){document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));el.classList.add('on');S.filter=el.dataset.f;renderTrades();}
 
 function renderTrades(){
-  let tr=filteredFills();
+  let tr=[...S.fills];
   if(S.filter==='win')tr=tr.filter(t=>parseFloat(t.closedPnl||0)>0);
   else if(S.filter==='loss')tr=tr.filter(t=>parseFloat(t.closedPnl||0)<0);
   else if(S.filter==='long')tr=tr.filter(t=>t.side==='B');
@@ -839,6 +865,89 @@ function renderTrades(){
       <div><div class="t-pnl" style="color:${v>=0?'var(--g)':'var(--r)'}">${v>=0?'+':''}$${v.toFixed(2)}</div><div class="t-dt">${ds}</div></div>
     </div>`;
   }).join('');
+}
+
+
+// ══════════════════════════════════════════
+// NẠP / RÚT (userNonFundingLedgerUpdates)
+// ══════════════════════════════════════════
+async function loadFund(){
+  const wrap=document.getElementById('fundList');
+  if(!S.wallet){wrap.innerHTML=`<div class="empty"><div class="ei">🔗</div><div class="et">Nhập địa chỉ ví ở Cài đặt</div></div>`;return;}
+  wrap.innerHTML=`<div class="spinrow"><div class="sp"></div>Đang tải...</div>`;
+  // startTime = 0 để lấy toàn bộ lịch sử
+  const data=await hl({type:'userNonFundingLedgerUpdates',user:S.wallet,startTime:0});
+  S.fundsLoaded=true;
+  if(!data||!Array.isArray(data)){wrap.innerHTML=`<div class="empty"><div class="ei">⚠️</div><div class="et">Không thể tải dữ liệu</div></div>`;return;}
+  // Filter chỉ deposit/withdraw (type: deposit | withdraw | internalTransfer | spotTransfer)
+  S.funds=data.filter(x=>{
+    const t=(x.delta?.type||'').toLowerCase();
+    return t==='deposit'||t==='withdraw'||t==='accountclassification'||t==='vaultdeposit'||t==='vaultwithdraw'||t.includes('deposit')||t.includes('withdraw');
+  }).sort((a,b)=>b.time-a.time);
+  renderFundSummary();
+  renderFund();
+}
+
+function setFundF(el){
+  document.querySelectorAll('[data-fw]').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  S.fundFilter=el.dataset.fw;
+  renderFund();
+}
+
+function renderFundSummary(){
+  let dep=0,depCnt=0,wit=0,witCnt=0;
+  S.funds.forEach(x=>{
+    const t=(x.delta?.type||'').toLowerCase();
+    const amt=parseFloat(x.delta?.usdc||x.delta?.amount||0);
+    if(t.includes('deposit')){dep+=Math.abs(amt);depCnt++;}
+    else if(t.includes('withdraw')){wit+=Math.abs(amt);witCnt++;}
+  });
+  document.getElementById('fundDeposit').textContent='$'+fmt$(dep);
+  document.getElementById('fundDepositCnt').textContent=depCnt+' lần';
+  document.getElementById('fundWithdraw').textContent='$'+fmt$(wit);
+  document.getElementById('fundWithdrawCnt').textContent=witCnt+' lần';
+  document.getElementById('fundCount').textContent=S.funds.length+' giao dịch';
+}
+
+function renderFund(){
+  let list=[...S.funds];
+  if(S.fundFilter==='deposit') list=list.filter(x=>(x.delta?.type||'').toLowerCase().includes('deposit'));
+  else if(S.fundFilter==='withdraw') list=list.filter(x=>(x.delta?.type||'').toLowerCase().includes('withdraw'));
+
+  const wrap=document.getElementById('fundList');
+  if(!list.length){
+    wrap.innerHTML=`<div class="empty"><div class="ei">📭</div><div class="et">Không có giao dịch</div></div>`;
+    return;
+  }
+  const typeLabel=t=>{
+    const tl=t.toLowerCase();
+    if(tl.includes('deposit'))return{lbl:'Nạp',cls:'g'};
+    if(tl.includes('withdraw'))return{lbl:'Rút',cls:'r'};
+    return{lbl:t,cls:''};
+  };
+  wrap.innerHTML=`<div>${list.map(x=>{
+    const t=x.delta?.type||'unknown';
+    const amt=parseFloat(x.delta?.usdc||x.delta?.amount||0);
+    const {lbl,cls}=typeLabel(t);
+    const dt=new Date(x.time);
+    const ds=`${dt.getDate()}/${dt.getMonth()+1}/${dt.getFullYear()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+    const isPos=lbl==='Nạp';
+    const hash=x.hash||x.delta?.hash||'';
+    return `<div class="t-item">
+      <div style="display:flex;align-items:center;gap:9px">
+        <div style="width:36px;height:36px;border-radius:10px;background:${isPos?'rgba(5,150,105,.12)':'rgba(220,38,38,.1)'};display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">${isPos?'⬇️':'⬆️'}</div>
+        <div>
+          <div class="t-coin">${lbl} USDC</div>
+          <div class="t-sub">${ds}${hash?` · ${hash.slice(0,8)}…`:''}</div>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div class="t-pnl" style="color:${isPos?'var(--g)':'var(--r)'}">${isPos?'+':'-'}$${Math.abs(amt).toFixed(2)}</div>
+        <div class="t-dt" style="background:${isPos?'rgba(5,150,105,.1)':'rgba(220,38,38,.08)'};color:${isPos?'var(--g)':'var(--r)'};padding:1px 6px;border-radius:4px;font-size:9px;font-weight:700">${lbl}</div>
+      </div>
+    </div>`;
+  }).join('')}</div>`;
 }
 
 // ══════════════════════════════════════════
@@ -877,16 +986,6 @@ function setEmp(id,ic,tx){document.getElementById(id).innerHTML=`<div class="emp
 function heroEmpty(){['hTotal','hUsdc','hWith'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent='--';});const u=document.getElementById('hUnreal');if(u){u.textContent='--';u.style.color='var(--t3)';}const b=document.getElementById('hUpnlBadge');if(b){b.textContent='-- UPNL';b.className='upnl-badge up';}}
 
 // ══════════════════════════════════════════
-// DATE INPUT EVENTS
-// ══════════════════════════════════════════
-function initDateInputs(){
-  ['dfFrom','dfTo'].forEach(id=>{document.getElementById(id).addEventListener('change',()=>{document.querySelectorAll('.dfs').forEach(e=>e.classList.remove('on'));readDateInputs();applyRange();});});
-  const t=dateFmt(new Date());
-  document.getElementById('dfFrom').value=t;document.getElementById('dfTo').value=t;
-  S.dateFrom=new Date(t);const de=new Date(t);de.setHours(23,59,59);S.dateTo=de;
-}
-
-// ══════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════
 function init(){
@@ -895,7 +994,7 @@ function init(){
   if(S.sheet){document.getElementById('shtInp').value=S.sheet;document.getElementById('shtPrev').textContent='Đã cài đặt ✓';}
   if(!S.auto)document.getElementById('autoTog').classList.remove('on');
   document.getElementById('intSel').value=S.int;
-  updAutoLbl();initDateInputs();renderCal();renderCalMonthly();
+  updAutoLbl();renderCal();renderCalMonthly();
   setupTimer();startClock();doRefresh();
 }
 init();
