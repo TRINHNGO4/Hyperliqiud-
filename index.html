@@ -285,6 +285,15 @@ html,body{height:100%;background:var(--bg0);color:var(--t1);font-family:var(--sa
 .toast{position:fixed;top:58px;left:50%;transform:translateX(-50%) translateY(-8px);background:var(--t1);color:var(--bg1);padding:8px 14px;border-radius:9px;font-size:11.5px;font-weight:600;z-index:999;opacity:0;pointer-events:none;transition:.22s all;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.2)}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 
+/* ── CURRENCY TOGGLE ── */
+.cur-tog{display:flex;align-items:center;gap:2px;background:#f0f4ff;border:1px solid rgba(37,99,235,.25);border-radius:20px;padding:2px 7px 2px 5px;cursor:pointer;transition:.15s;user-select:none;height:24px}
+.cur-tog:active{transform:scale(.93)}
+.cur-tog.vnd{background:#fff7ed;border-color:rgba(217,119,6,.3)}
+.cur-ic{font-size:8.5px;font-weight:800;color:var(--a);letter-spacing:.2px;line-height:1}
+.cur-tog.vnd .cur-ic{color:var(--y)}
+.cur-arr{font-size:9px;color:var(--t3);margin:0 1px;line-height:1}
+.cur-rate{font-size:7.5px;color:var(--t3);font-family:var(--mono);line-height:1;margin-left:2px}
+
 .g{color:var(--g)}.r{color:var(--r)}.a{color:var(--a)}.dim{color:var(--t2)}
 </style>
 </head>
@@ -296,6 +305,11 @@ html,body{height:100%;background:var(--bg0);color:var(--t1);font-family:var(--sa
   <div class="logo"><b>HL</b> Tracker</div>
   <div class="topbar-r">
     <div class="pill-live"><span class="ldot"></span>LIVE</div>
+    <div class="cur-tog" id="curTogBtn" onclick="toggleCurrency()" title="Chuyển đổi USDC ⇔ VND">
+      <span class="cur-ic" id="curLabel">USDC</span>
+      <span class="cur-arr">⇔</span>
+      <span class="cur-ic" id="curLabel2" style="color:var(--y)">VND</span>
+    </div>
     <span class="ts" id="tsEl">--:--:--</span>
     <div class="ibtn" id="rfBtn" onclick="doRefresh()">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.66 0 3-4.03 3-9s-1.34-9-3-9m0 18c-1.66 0-3-4.03-3-9s1.34-9 3-9"/></svg>
@@ -318,7 +332,7 @@ html,body{height:100%;background:var(--bg0);color:var(--t1);font-family:var(--sa
         Tổng số dư
       </div>
       <div class="hero-main">
-        <div class="hero-num"><sup>$</sup><span id="hTotal">--</span></div>
+        <div class="hero-num"><sup id="hCurSym">$</sup><span id="hTotal">--</span></div>
       </div>
       <div class="hero-row" style="grid-template-columns:1fr 1fr">
         <div class="hg"><div class="hg-l">Số dư USDC</div><div class="hg-v" style="color:var(--a)" id="hUsdc">--</div></div>
@@ -496,7 +510,9 @@ const S={
   filter:'all',
   calY:new Date().getFullYear(),calM:new Date().getMonth(),
   fills:[],dpnl:{},openDay:null,timer:null,tickTimer:null,curTab:'dash',
-  fundsLoaded:false,funds:[],fundFilter:'all'
+  fundsLoaded:false,funds:[],fundFilter:'all',
+  // currency
+  showVnd:false, usdVndRate:0, rateLoaded:false, rateSource:''
 };
 function _ls(k,v){if(v===undefined)return localStorage.getItem(k);v===null?localStorage.removeItem(k):localStorage.setItem(k,v);}
 
@@ -575,13 +591,17 @@ async function loadDash(){
   // Số dư USDC thuần (không tính unrealized) = totalBalance - unrealPnl
   const usdcPure = totalBalance - unrealPnl;
 
+  // Cache for re-render on currency toggle
+  S._totalBalance=totalBalance; S._usdcPure=usdcPure; S._unrealPnl=unrealPnl;
+
   // Hero
-  document.getElementById('hTotal').textContent=fmt$(totalBalance);
-  document.getElementById('hUsdc').textContent='$'+fmt$(usdcPure>0?usdcPure:totalBalance);
+  document.getElementById('hTotal').textContent=S.showVnd&&S.usdVndRate>0?fmtVND(totalBalance*S.usdVndRate):fmt$(totalBalance);
+  document.getElementById('hUsdc').textContent=S.showVnd&&S.usdVndRate>0?fmtVND((usdcPure>0?usdcPure:totalBalance)*S.usdVndRate):'$'+fmt$(usdcPure>0?usdcPure:totalBalance);
   const hOp=document.getElementById('hOpenPnl');
-  if(hOp){hOp.textContent=(unrealPnl>=0?'+$':'-$')+Math.abs(unrealPnl).toFixed(2);hOp.style.color=unrealPnl>=0?'var(--g)':'var(--r)';}
+  if(hOp){hOp.textContent=fmtCurSigned(unrealPnl);hOp.style.color=unrealPnl>=0?'var(--g)':'var(--r)';}
 
   document.getElementById('posTs').textContent=new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  S._lastPositions=positions; S._lastOrders=Array.isArray(orders)?orders:[];
   renderPositions(positions);
   renderOrders(Array.isArray(orders)?orders:[]);
 }
@@ -613,7 +633,7 @@ function renderPositions(positions){
     // Build metrics
     const metrics=[];
     metrics.push({l:`Size (${coin})`, v: sz.toFixed(sz<1?4:sz<100?3:2)});
-    if(mUsed>0) metrics.push({l:'Margin (USDT)', v:'$'+mUsed.toFixed(2)});
+    if(mUsed>0) metrics.push({l:'Margin ('+(S.showVnd?'VND':'USDT')+')', v:S.showVnd&&S.usdVndRate>0?fmtVND(mUsed*S.usdVndRate):'$'+mUsed.toFixed(2)});
     metrics.push({l:'Entry Price', v: entry<1?entry.toFixed(4):'$'+entry.toFixed(2)});
     if(markPx>0) metrics.push({l:'Mark Price', v: markPx<1?markPx.toFixed(4):'$'+markPx.toFixed(2)});
     if(liq!=='--') metrics.push({l:'Liq. Price', v: liq<1?liq:'$'+liq});
@@ -623,7 +643,7 @@ function renderPositions(positions){
 
     // Funding: cumFunding from API
     const cumFunding=parseFloat(pos.cumFunding?.sinceOpen||0);
-    const cumFundingStr=cumFunding!==0?`${cumFunding>=0?'+':''}$${cumFunding.toFixed(3)}`:'$0.000';
+    const cumFundingStr=fmtCurSigned(cumFunding);
     const cumFundingColor=cumFunding>=0?'var(--g)':'var(--r)';
 
     return `<div class="pc">
@@ -644,8 +664,8 @@ function renderPositions(positions){
 
       <div class="pc-pnl-hero">
         <div class="pc-pnl-hero-item">
-          <div class="pc-phl">PNL (USDT)</div>
-          <div class="pc-phv" style="color:${pnlColor}">${upnl>=0?'+':''}${upnl.toFixed(2)}</div>
+          <div class="pc-phl">PNL (${S.showVnd?'VND':'USDT'})</div>
+          <div class="pc-phv" style="color:${pnlColor}">${fmtCurSigned(upnl)}</div>
         </div>
         <div class="pc-pnl-hero-item">
           <div class="pc-phl">ROI</div>
@@ -754,7 +774,13 @@ function renderCal(){
     // PnL display: +0.00 format like screenshot
     let pnlTxt='';
     if(pnl!==undefined){
-      pnlTxt=(pnl>=0?'+':'')+pnl.toFixed(2);
+      if(S.showVnd&&S.usdVndRate>0){
+        const vndVal=pnl*S.usdVndRate;
+        const absM=Math.abs(vndVal/1000000);
+        pnlTxt=(pnl>=0?'+':'-')+(absM>=1?absM.toFixed(1)+'M':(Math.abs(vndVal/1000)).toFixed(0)+'k');
+      } else {
+        pnlTxt=(pnl>=0?'+':'')+pnl.toFixed(2);
+      }
     }
 
     html+=`<div class="${cls}" onclick="togDay(${d},'${k}')">
@@ -777,7 +803,7 @@ function renderCalMonthly(){
   const cmD=document.getElementById('cmDetail');
   if(cmD)cmD.textContent=wins+' ngày lãi · '+loss+' ngày lỗ';
   const el=document.getElementById('cmVal');
-  if(el){el.textContent=pnlFmt(tot);el.style.color=tot>=0?'var(--g)':'var(--r)';}
+  if(el){el.textContent=S.showVnd&&S.usdVndRate>0?fmtCurSigned(tot):pnlFmt(tot);el.style.color=tot>=0?'var(--g)':'var(--r)';}
 }
 
 // MONTH/YEAR PICKER
@@ -824,7 +850,7 @@ function togDay(d,key){
   const pc=(pnl||0)>=0?'var(--g)':'var(--r)';
   pop.classList.add('open');
   pop.innerHTML=`<div class="dp-head">
-    <div style="font-size:11.5px;font-weight:700">${d}/${S.calM+1}/${S.calY} · <span style="color:${pc};font-family:var(--mono)">${pnlFmt(pnl||0)}</span> · ${trs.length} lệnh</div>
+    <div style="font-size:11.5px;font-weight:700">${d}/${S.calM+1}/${S.calY} · <span style="color:${pc};font-family:var(--mono)">${S.showVnd&&S.usdVndRate>0?fmtCurSigned(pnl||0):pnlFmt(pnl||0)}</span> · ${trs.length} lệnh</div>
     <div class="dp-x" onclick="S.openDay=null;document.getElementById('dayPop').classList.remove('open')">✕</div>
   </div>
   ${trs.slice(0,8).map(t=>{const v=parseFloat(t.closedPnl||0),c=cx(t.coin);
@@ -833,7 +859,7 @@ function togDay(d,key){
         <div style="width:22px;height:22px;border-radius:5px;background:${c}15;color:${c};display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:8px;font-weight:800">${(t.coin||'?').slice(0,3)}</div>
         <div style="font-size:11px;font-weight:600">${t.coin} <span style="color:var(--t3);font-weight:400">${t.side==='B'?'Long':'Short'}</span></div>
       </div>
-      <div style="font-family:var(--mono);font-size:11px;font-weight:700;color:${v>=0?'var(--g)':'var(--r)'}">${v>=0?'+':''}$${v.toFixed(2)}</div>
+      <div style="font-family:var(--mono);font-size:11px;font-weight:700;color:${v>=0?'var(--g)':'var(--r)'}">${fmtCurSigned(v)}</div>
     </div>`;
   }).join('')}
   ${trs.length>8?`<div style="text-align:center;font-size:10px;color:var(--t3);padding-top:6px">+${trs.length-8} lệnh nữa</div>`:''}`;
@@ -862,7 +888,7 @@ function renderTrades(){
         <div class="t-ico" style="background:${c}15;color:${c}">${(t.coin||'?').slice(0,4)}</div>
         <div><div class="t-coin">${t.coin}-PERP</div><div class="t-sub">${t.side==='B'?'Long':'Short'} · $${parseFloat(t.px||0).toFixed(2)} · ${parseFloat(t.sz||0).toFixed(4)}</div></div>
       </div>
-      <div><div class="t-pnl" style="color:${v>=0?'var(--g)':'var(--r)'}">${v>=0?'+':''}$${v.toFixed(2)}</div><div class="t-dt">${ds}</div></div>
+      <div><div class="t-pnl" style="color:${v>=0?'var(--g)':'var(--r)'}">${fmtCurSigned(v)}</div><div class="t-dt">${ds}</div></div>
     </div>`;
   }).join('');
 }
@@ -903,9 +929,9 @@ function renderFundSummary(){
     if(t.includes('deposit')){dep+=Math.abs(amt);depCnt++;}
     else if(t.includes('withdraw')){wit+=Math.abs(amt);witCnt++;}
   });
-  document.getElementById('fundDeposit').textContent='$'+fmt$(dep);
+  document.getElementById('fundDeposit').textContent=S.showVnd&&S.usdVndRate>0?fmtVND(dep*S.usdVndRate):'$'+fmt$(dep);
   document.getElementById('fundDepositCnt').textContent=depCnt+' lần';
-  document.getElementById('fundWithdraw').textContent='$'+fmt$(wit);
+  document.getElementById('fundWithdraw').textContent=S.showVnd&&S.usdVndRate>0?fmtVND(wit*S.usdVndRate):'$'+fmt$(wit);
   document.getElementById('fundWithdrawCnt').textContent=witCnt+' lần';
   document.getElementById('fundCount').textContent=S.funds.length+' giao dịch';
 }
@@ -943,7 +969,7 @@ function renderFund(){
         </div>
       </div>
       <div style="text-align:right">
-        <div class="t-pnl" style="color:${isPos?'var(--g)':'var(--r)'}">${isPos?'+':'-'}$${Math.abs(amt).toFixed(2)}</div>
+        <div class="t-pnl" style="color:${isPos?'var(--g)':'var(--r)'}">${isPos?'':'-'}${S.showVnd&&S.usdVndRate>0?fmtVND(Math.abs(amt)*S.usdVndRate):'$'+Math.abs(amt).toFixed(2)}</div>
         <div class="t-dt" style="background:${isPos?'rgba(5,150,105,.1)':'rgba(220,38,38,.08)'};color:${isPos?'var(--g)':'var(--r)'};padding:1px 6px;border-radius:4px;font-size:9px;font-weight:700">${lbl}</div>
       </div>
     </div>`;
@@ -986,6 +1012,107 @@ function setEmp(id,ic,tx){document.getElementById(id).innerHTML=`<div class="emp
 function heroEmpty(){['hTotal','hUsdc','hWith'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent='--';});const u=document.getElementById('hUnreal');if(u){u.textContent='--';u.style.color='var(--t3)';}const b=document.getElementById('hUpnlBadge');if(b){b.textContent='-- UPNL';b.className='upnl-badge up';}}
 
 // ══════════════════════════════════════════
+// CURRENCY CONVERSION  USDC ⇔ VND
+// ══════════════════════════════════════════
+async function fetchRate(){
+  // 1. CoinGecko: giá USDT/VND thực tế từ thị trường crypto
+  try{
+    const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=vnd');
+    if(r.ok){const d=await r.json();if(d.tether&&d.tether.vnd){S.usdVndRate=d.tether.vnd;S.rateLoaded=true;S.rateSource='CoinGecko';updRateDisplay();return;}}
+  }catch{}
+  // 2. Binance ticker USDTVND
+  try{
+    const r=await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTVND');
+    if(r.ok){const d=await r.json();if(d.price){S.usdVndRate=parseFloat(d.price);S.rateLoaded=true;S.rateSource='Binance';updRateDisplay();return;}}
+  }catch{}
+  // 3. Fallback: open.er-api USD/VND
+  try{
+    const r=await fetch('https://open.er-api.com/v6/latest/USD');
+    if(r.ok){const d=await r.json();if(d.rates&&d.rates.VND){S.usdVndRate=d.rates.VND;S.rateLoaded=true;S.rateSource='ER-API';updRateDisplay();return;}}
+  }catch{}
+  // 4. Static fallback
+  S.usdVndRate=25400;S.rateLoaded=true;S.rateSource='tĩnh';updRateDisplay();
+}
+
+function updRateDisplay(){
+  const btn=document.getElementById('curTogBtn');
+  if(!btn)return;
+  let rateEl=document.getElementById('curRateHint');
+  if(!rateEl){rateEl=document.createElement('span');rateEl.id='curRateHint';rateEl.className='cur-rate';btn.appendChild(rateEl);}
+  if(S.showVnd&&S.usdVndRate>0){
+    rateEl.textContent='≈'+(S.usdVndRate/1000).toFixed(0)+'k';
+    rateEl.title=(S.rateSource||'')+'  1 USDT = '+(S.usdVndRate||0).toLocaleString('vi-VN')+'₫';
+    rateEl.style.display='';
+  }else{rateEl.style.display='none';}
+}
+
+function toggleCurrency(){
+  S.showVnd=!S.showVnd;
+  const btn=document.getElementById('curTogBtn');
+  btn.classList.toggle('vnd',S.showVnd);
+  document.getElementById('curLabel').style.fontWeight=S.showVnd?'400':'800';
+  document.getElementById('curLabel2').style.fontWeight=S.showVnd?'800':'400';
+  updRateDisplay();
+  // Re-render all visible data
+  rerenderAll();
+  toast(S.showVnd?'💱 Hiển thị VND (tỷ giá trực tiếp)':'💵 Hiển thị USDC');
+}
+
+function toVND(usdcAmt){
+  if(!S.showVnd||!S.usdVndRate)return null;
+  return usdcAmt*S.usdVndRate;
+}
+
+function fmtVND(n){
+  if(isNaN(n))return '0 ₫';
+  return n.toLocaleString('vi-VN',{maximumFractionDigits:0})+'₫';
+}
+
+// Display helper: returns formatted string in current currency
+function fmtCur(usdcAmt,showSign=false){
+  if(S.showVnd&&S.usdVndRate>0){
+    const v=usdcAmt*S.usdVndRate;
+    const s=showSign?(v>=0?'+':''):'';
+    return s+fmtVND(v);
+  }
+  if(showSign)return(usdcAmt>=0?'+$':'-$')+Math.abs(usdcAmt).toFixed(2);
+  return '$'+fmt$(usdcAmt);
+}
+
+function fmtCurAbs(usdcAmt){
+  if(S.showVnd&&S.usdVndRate>0)return fmtVND(Math.abs(usdcAmt)*S.usdVndRate);
+  return '$'+Math.abs(usdcAmt).toFixed(2);
+}
+
+function fmtCurSigned(usdcAmt){
+  if(S.showVnd&&S.usdVndRate>0){
+    const v=usdcAmt*S.usdVndRate;
+    return(v>=0?'+':'')+fmtVND(v);
+  }
+  return(usdcAmt>=0?'+$':'-$')+Math.abs(usdcAmt).toFixed(2);
+}
+
+function rerenderAll(){
+  // Update hero currency symbol
+  const sym=document.getElementById('hCurSym');
+  if(sym)sym.textContent=S.showVnd?'':'$';
+  // Dashboard: re-render positions with cached data
+  if(S._lastPositions!==undefined){renderPositions(S._lastPositions);}
+  if(S._lastOrders!==undefined){renderOrders(S._lastOrders);}
+  // Hero numbers
+  if(S._totalBalance!==undefined){
+    document.getElementById('hTotal').textContent=S.showVnd&&S.usdVndRate>0?fmtVND(S._totalBalance*S.usdVndRate):fmt$(S._totalBalance);
+    document.getElementById('hUsdc').textContent=S.showVnd&&S.usdVndRate>0?fmtVND((S._usdcPure||0)*S.usdVndRate):'$'+fmt$(S._usdcPure||0);
+    const hOp=document.getElementById('hOpenPnl');
+    if(hOp){hOp.textContent=fmtCurSigned(S._unrealPnl||0);hOp.style.color=(S._unrealPnl||0)>=0?'var(--g)':'var(--r)';}
+  }
+  // History summary
+  renderCalMonthly();renderTrades();
+  // Fund page
+  if(S.fundsLoaded){renderFundSummary();renderFund();}
+}
+
+// ══════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════
 function init(){
@@ -995,7 +1122,10 @@ function init(){
   if(!S.auto)document.getElementById('autoTog').classList.remove('on');
   document.getElementById('intSel').value=S.int;
   updAutoLbl();renderCal();renderCalMonthly();
-  setupTimer();startClock();doRefresh();
+  setupTimer();startClock();
+  fetchRate();
+  setInterval(fetchRate, 60000); // cập nhật tỷ giá mỗi 60 giây
+  doRefresh();
 }
 init();
 </script>
