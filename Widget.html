@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PnL Widget</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@700&family=Inter:wght@500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  background:#0a0f1e;
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;font-family:'Inter',sans-serif;
+}
+.w{
+  background:linear-gradient(135deg,#111827,#1a2035);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:18px;
+  padding:18px 22px;
+  width:200px;
+  box-shadow:0 8px 32px rgba(0,0,0,.4);
+  position:relative;overflow:hidden;
+}
+.w::before{
+  content:'';position:absolute;top:-40px;right:-40px;
+  width:100px;height:100px;
+  background:radial-gradient(circle,rgba(61,142,255,.15),transparent 70%);
+}
+.lbl{font-size:10px;font-weight:600;color:rgba(255,255,255,.4);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+.pnl{font-family:'IBM Plex Mono',monospace;font-size:28px;font-weight:700;line-height:1;letter-spacing:-1px}
+.pnl.up{color:#00d97e}
+.pnl.dn{color:#ff4060}
+.pnl.na{color:rgba(255,255,255,.3)}
+.sub{margin-top:8px;display:flex;align-items:center;justify-content:space-between}
+.wallet{font-size:9px;color:rgba(255,255,255,.25);font-family:'IBM Plex Mono',monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px}
+.dot{width:6px;height:6px;border-radius:50%;background:#00d97e;animation:p 2s ease infinite;flex-shrink:0}
+@keyframes p{0%,100%{opacity:1}50%{opacity:.2}}
+.ts{font-size:8px;color:rgba(255,255,255,.2);font-family:'IBM Plex Mono',monospace;margin-top:5px;text-align:right}
+.err{font-size:11px;color:rgba(255,255,255,.3);margin-top:4px}
+</style>
+</head>
+<body>
+<div class="w">
+  <div class="lbl">Tổng PnL</div>
+  <div class="pnl na" id="pnl">--</div>
+  <div id="err" class="err"></div>
+  <div class="sub">
+    <div class="wallet" id="waddr">Chưa cài ví</div>
+    <div class="dot" id="dot"></div>
+  </div>
+  <div class="ts" id="ts">--</div>
+</div>
+
+<script>
+// Lấy ví từ URL: widget.html?w=0x...
+// Ví dụ: https://trinhngo4.github.io/Hyperliqiud-/widget.html?w=0xABC...
+const params = new URLSearchParams(location.search);
+const WALLET = params.get('w') || '';
+
+const $ = id => document.getElementById(id);
+
+async function fetch_pnl() {
+  if (!WALLET) {
+    $('pnl').textContent = 'No wallet';
+    $('err').textContent = 'Thêm ?w=0x... vào cuối URL';
+    return;
+  }
+
+  $('waddr').textContent = WALLET.slice(0,6)+'...'+WALLET.slice(-4);
+
+  try {
+    // Lấy fills để tính tổng realized PnL
+    const res = await fetch('https://api.hyperliquid.xyz/info', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({type:'userFills', user: WALLET})
+    });
+    const fills = await res.json();
+
+    let total = 0;
+    if (Array.isArray(fills)) {
+      fills.forEach(f => { total += parseFloat(f.closedPnl || 0); });
+    }
+
+    const el = $('pnl');
+    el.textContent = (total >= 0 ? '+$' : '-$') + Math.abs(total).toFixed(2);
+    el.className = 'pnl ' + (total >= 0 ? 'up' : 'dn');
+    $('err').textContent = '';
+    $('ts').textContent = new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  } catch(e) {
+    $('pnl').textContent = 'Lỗi';
+    $('err').textContent = 'Không kết nối được API';
+  }
+}
+
+fetch_pnl();
+setInterval(fetch_pnl, 30000); // cập nhật mỗi 30s
+</script>
+</body>
+</html>
