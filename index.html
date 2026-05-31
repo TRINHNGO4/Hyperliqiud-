@@ -286,13 +286,14 @@ html,body{height:100%;background:var(--bg0);color:var(--t1);font-family:var(--sa
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* ── CURRENCY TOGGLE ── */
-.cur-tog{display:flex;align-items:center;gap:2px;background:#f0f4ff;border:1px solid rgba(37,99,235,.25);border-radius:20px;padding:2px 7px 2px 5px;cursor:pointer;transition:.15s;user-select:none;height:24px}
-.cur-tog:active{transform:scale(.93)}
-.cur-tog.vnd{background:#fff7ed;border-color:rgba(217,119,6,.3)}
-.cur-ic{font-size:8.5px;font-weight:800;color:var(--a);letter-spacing:.2px;line-height:1}
-.cur-tog.vnd .cur-ic{color:var(--y)}
-.cur-arr{font-size:9px;color:var(--t3);margin:0 1px;line-height:1}
-.cur-rate{font-size:7.5px;color:var(--t3);font-family:var(--mono);line-height:1;margin-left:2px}
+.cur-tog{display:flex;align-items:center;gap:3px;background:#f0f4ff;border:1px solid rgba(37,99,235,.25);border-radius:20px;padding:2px 9px 2px 7px;cursor:pointer;transition:.2s;user-select:none;height:24px;min-width:52px;justify-content:center}
+.cur-tog:active{transform:scale(.91)}
+.cur-tog.mode1{background:#fff7ed;border-color:rgba(217,119,6,.4)}
+.cur-tog.mode2{background:#f0fdf4;border-color:rgba(5,150,105,.35)}
+.cur-label{font-size:9px;font-weight:800;letter-spacing:.4px;line-height:1;color:var(--a);transition:.15s}
+.cur-tog.mode1 .cur-label{color:var(--y)}
+.cur-tog.mode2 .cur-label{color:var(--g)}
+.cur-rate{font-size:7px;color:var(--t3);font-family:var(--mono);line-height:1;margin-left:3px;opacity:.8}
 
 .g{color:var(--g)}.r{color:var(--r)}.a{color:var(--a)}.dim{color:var(--t2)}
 </style>
@@ -305,10 +306,8 @@ html,body{height:100%;background:var(--bg0);color:var(--t1);font-family:var(--sa
   <div class="logo"><b>HL</b> Tracker</div>
   <div class="topbar-r">
     <div class="pill-live"><span class="ldot"></span>LIVE</div>
-    <div class="cur-tog" id="curTogBtn" onclick="toggleCurrency()" title="Chuyển đổi USDC ⇔ VND">
-      <span class="cur-ic" id="curLabel">USDC</span>
-      <span class="cur-arr">⇔</span>
-      <span class="cur-ic" id="curLabel2" style="color:var(--y)">VND</span>
+    <div class="cur-tog" id="curTogBtn" onclick="toggleCurrency()" title="Bấm để chuyển đổi USDC → VND → TWD">
+      <span class="cur-label" id="curLabelTxt">USDC</span>
     </div>
     <span class="ts" id="tsEl">--:--:--</span>
     <div class="ibtn" id="rfBtn" onclick="doRefresh()">
@@ -512,7 +511,7 @@ const S={
   fills:[],dpnl:{},openDay:null,timer:null,tickTimer:null,curTab:'dash',
   fundsLoaded:false,funds:[],fundFilter:'all',
   // currency
-  showVnd:false, usdVndRate:0, rateLoaded:false, rateSource:''
+  curMode:0, usdVndRate:0, usdTwdRate:0, rateLoaded:false, rateSource:''
 };
 function _ls(k,v){if(v===undefined)return localStorage.getItem(k);v===null?localStorage.removeItem(k):localStorage.setItem(k,v);}
 
@@ -595,8 +594,8 @@ async function loadDash(){
   S._totalBalance=totalBalance; S._usdcPure=usdcPure; S._unrealPnl=unrealPnl;
 
   // Hero
-  document.getElementById('hTotal').textContent=S.showVnd&&S.usdVndRate>0?fmtVND(totalBalance*S.usdVndRate):fmt$(totalBalance);
-  document.getElementById('hUsdc').textContent=S.showVnd&&S.usdVndRate>0?fmtVND((usdcPure>0?usdcPure:totalBalance)*S.usdVndRate):'$'+fmt$(usdcPure>0?usdcPure:totalBalance);
+  document.getElementById('hTotal').textContent=S.curMode===0?fmt$(totalBalance):fmtCurVal(totalBalance);
+  document.getElementById('hUsdc').textContent=S.curMode===0?'$'+fmt$(usdcPure>0?usdcPure:totalBalance):fmtCurVal(usdcPure>0?usdcPure:totalBalance);
   const hOp=document.getElementById('hOpenPnl');
   if(hOp){hOp.textContent=fmtCurSigned(unrealPnl);hOp.style.color=unrealPnl>=0?'var(--g)':'var(--r)';}
 
@@ -633,7 +632,7 @@ function renderPositions(positions){
     // Build metrics
     const metrics=[];
     metrics.push({l:`Size (${coin})`, v: sz.toFixed(sz<1?4:sz<100?3:2)});
-    if(mUsed>0) metrics.push({l:'Margin ('+(S.showVnd?'VND':'USDT')+')', v:S.showVnd&&S.usdVndRate>0?fmtVND(mUsed*S.usdVndRate):'$'+mUsed.toFixed(2)});
+    if(mUsed>0) metrics.push({l:'Margin ('+curLabel()+')', v:S.curMode===0?'$'+mUsed.toFixed(2):fmtCurVal(mUsed)});
     metrics.push({l:'Entry Price', v: entry<1?entry.toFixed(4):'$'+entry.toFixed(2)});
     if(markPx>0) metrics.push({l:'Mark Price', v: markPx<1?markPx.toFixed(4):'$'+markPx.toFixed(2)});
     if(liq!=='--') metrics.push({l:'Liq. Price', v: liq<1?liq:'$'+liq});
@@ -664,7 +663,7 @@ function renderPositions(positions){
 
       <div class="pc-pnl-hero">
         <div class="pc-pnl-hero-item">
-          <div class="pc-phl">PNL (${S.showVnd?'VND':'USDT'})</div>
+          <div class="pc-phl">PNL (${curLabel()})</div>
           <div class="pc-phv" style="color:${pnlColor}">${fmtCurSigned(upnl)}</div>
         </div>
         <div class="pc-pnl-hero-item">
@@ -774,10 +773,13 @@ function renderCal(){
     // PnL display: +0.00 format like screenshot
     let pnlTxt='';
     if(pnl!==undefined){
-      if(S.showVnd&&S.usdVndRate>0){
+      if(S.curMode===1&&S.usdVndRate>0){
         const vndVal=pnl*S.usdVndRate;
         const absM=Math.abs(vndVal/1000000);
         pnlTxt=(pnl>=0?'+':'-')+(absM>=1?absM.toFixed(1)+'M':(Math.abs(vndVal/1000)).toFixed(0)+'k');
+      } else if(S.curMode===2&&S.usdTwdRate>0){
+        const twdVal=pnl*S.usdTwdRate;
+        pnlTxt=(pnl>=0?'+':'-')+Math.abs(twdVal).toFixed(0)+'$';
       } else {
         pnlTxt=(pnl>=0?'+':'')+pnl.toFixed(2);
       }
@@ -803,7 +805,7 @@ function renderCalMonthly(){
   const cmD=document.getElementById('cmDetail');
   if(cmD)cmD.textContent=wins+' ngày lãi · '+loss+' ngày lỗ';
   const el=document.getElementById('cmVal');
-  if(el){el.textContent=S.showVnd&&S.usdVndRate>0?fmtCurSigned(tot):pnlFmt(tot);el.style.color=tot>=0?'var(--g)':'var(--r)';}
+  if(el){el.textContent=S.curMode===0?pnlFmt(tot):fmtCurSigned(tot);el.style.color=tot>=0?'var(--g)':'var(--r)';}
 }
 
 // MONTH/YEAR PICKER
@@ -850,7 +852,7 @@ function togDay(d,key){
   const pc=(pnl||0)>=0?'var(--g)':'var(--r)';
   pop.classList.add('open');
   pop.innerHTML=`<div class="dp-head">
-    <div style="font-size:11.5px;font-weight:700">${d}/${S.calM+1}/${S.calY} · <span style="color:${pc};font-family:var(--mono)">${S.showVnd&&S.usdVndRate>0?fmtCurSigned(pnl||0):pnlFmt(pnl||0)}</span> · ${trs.length} lệnh</div>
+    <div style="font-size:11.5px;font-weight:700">${d}/${S.calM+1}/${S.calY} · <span style="color:${pc};font-family:var(--mono)">${S.curMode===0?pnlFmt(pnl||0):fmtCurSigned(pnl||0)}</span> · ${trs.length} lệnh</div>
     <div class="dp-x" onclick="S.openDay=null;document.getElementById('dayPop').classList.remove('open')">✕</div>
   </div>
   ${trs.slice(0,8).map(t=>{const v=parseFloat(t.closedPnl||0),c=cx(t.coin);
@@ -929,9 +931,9 @@ function renderFundSummary(){
     if(t.includes('deposit')){dep+=Math.abs(amt);depCnt++;}
     else if(t.includes('withdraw')){wit+=Math.abs(amt);witCnt++;}
   });
-  document.getElementById('fundDeposit').textContent=S.showVnd&&S.usdVndRate>0?fmtVND(dep*S.usdVndRate):'$'+fmt$(dep);
+  document.getElementById('fundDeposit').textContent=S.curMode===0?'$'+fmt$(dep):fmtCurVal(dep);
   document.getElementById('fundDepositCnt').textContent=depCnt+' lần';
-  document.getElementById('fundWithdraw').textContent=S.showVnd&&S.usdVndRate>0?fmtVND(wit*S.usdVndRate):'$'+fmt$(wit);
+  document.getElementById('fundWithdraw').textContent=S.curMode===0?'$'+fmt$(wit):fmtCurVal(wit);
   document.getElementById('fundWithdrawCnt').textContent=witCnt+' lần';
   document.getElementById('fundCount').textContent=S.funds.length+' giao dịch';
 }
@@ -969,7 +971,7 @@ function renderFund(){
         </div>
       </div>
       <div style="text-align:right">
-        <div class="t-pnl" style="color:${isPos?'var(--g)':'var(--r)'}">${isPos?'':'-'}${S.showVnd&&S.usdVndRate>0?fmtVND(Math.abs(amt)*S.usdVndRate):'$'+Math.abs(amt).toFixed(2)}</div>
+        <div class="t-pnl" style="color:${isPos?'var(--g)':'var(--r)'}">${isPos?'':'-'}${S.curMode===0?'$'+Math.abs(amt).toFixed(2):fmtCurAbs(amt)}</div>
         <div class="t-dt" style="background:${isPos?'rgba(5,150,105,.1)':'rgba(220,38,38,.08)'};color:${isPos?'var(--g)':'var(--r)'};padding:1px 6px;border-radius:4px;font-size:9px;font-weight:700">${lbl}</div>
       </div>
     </div>`;
@@ -1012,103 +1014,123 @@ function setEmp(id,ic,tx){document.getElementById(id).innerHTML=`<div class="emp
 function heroEmpty(){['hTotal','hUsdc','hWith'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent='--';});const u=document.getElementById('hUnreal');if(u){u.textContent='--';u.style.color='var(--t3)';}const b=document.getElementById('hUpnlBadge');if(b){b.textContent='-- UPNL';b.className='upnl-badge up';}}
 
 // ══════════════════════════════════════════
-// CURRENCY CONVERSION  USDC ⇔ VND
+// CURRENCY CONVERSION  USDC → VND → TWD
+// curMode: 0=USDC  1=VND  2=TWD
 // ══════════════════════════════════════════
 async function fetchRate(){
-  // 1. CoinGecko: giá USDT/VND thực tế từ thị trường crypto
+  // Fetch VND + TWD together from CoinGecko
   try{
-    const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=vnd');
-    if(r.ok){const d=await r.json();if(d.tether&&d.tether.vnd){S.usdVndRate=d.tether.vnd;S.rateLoaded=true;S.rateSource='CoinGecko';updRateDisplay();return;}}
+    const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=vnd,twd');
+    if(r.ok){
+      const d=await r.json();
+      if(d.tether){
+        if(d.tether.vnd){S.usdVndRate=d.tether.vnd;}
+        if(d.tether.twd){S.usdTwdRate=d.tether.twd;}
+        if(S.usdVndRate>0||S.usdTwdRate>0){S.rateLoaded=true;S.rateSource='CoinGecko';updRateDisplay();return;}
+      }
+    }
   }catch{}
-  // 2. Binance ticker USDTVND
-  try{
-    const r=await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTVND');
-    if(r.ok){const d=await r.json();if(d.price){S.usdVndRate=parseFloat(d.price);S.rateLoaded=true;S.rateSource='Binance';updRateDisplay();return;}}
-  }catch{}
-  // 3. Fallback: open.er-api USD/VND
+  // Fallback: open.er-api for both
   try{
     const r=await fetch('https://open.er-api.com/v6/latest/USD');
-    if(r.ok){const d=await r.json();if(d.rates&&d.rates.VND){S.usdVndRate=d.rates.VND;S.rateLoaded=true;S.rateSource='ER-API';updRateDisplay();return;}}
+    if(r.ok){
+      const d=await r.json();
+      if(d.rates){
+        if(d.rates.VND)S.usdVndRate=d.rates.VND;
+        if(d.rates.TWD)S.usdTwdRate=d.rates.TWD;
+        S.rateLoaded=true;S.rateSource='ER-API';updRateDisplay();return;
+      }
+    }
   }catch{}
-  // 4. Static fallback
-  S.usdVndRate=25400;S.rateLoaded=true;S.rateSource='tĩnh';updRateDisplay();
+  // Static fallback
+  S.usdVndRate=S.usdVndRate||25400;
+  S.usdTwdRate=S.usdTwdRate||32.5;
+  S.rateLoaded=true;S.rateSource='tĩnh';updRateDisplay();
+}
+
+function curRate(){
+  return S.curMode===1?S.usdVndRate:(S.curMode===2?S.usdTwdRate:1);
 }
 
 function updRateDisplay(){
   const btn=document.getElementById('curTogBtn');
   if(!btn)return;
+  // Update button mode class
+  btn.className='cur-tog'+(S.curMode>0?' mode'+S.curMode:'');
+  // Update single label text
+  const lbl=document.getElementById('curLabelTxt');
+  if(lbl)lbl.textContent=['USDC','VND','TWD'][S.curMode];
+  // Rate hint next to label
   let rateEl=document.getElementById('curRateHint');
   if(!rateEl){rateEl=document.createElement('span');rateEl.id='curRateHint';rateEl.className='cur-rate';btn.appendChild(rateEl);}
-  if(S.showVnd&&S.usdVndRate>0){
+  if(S.curMode===1&&S.usdVndRate>0){
     rateEl.textContent='≈'+(S.usdVndRate/1000).toFixed(0)+'k';
-    rateEl.title=(S.rateSource||'')+'  1 USDT = '+(S.usdVndRate||0).toLocaleString('vi-VN')+'₫';
+    rateEl.title=S.rateSource+'  1 USDT = '+S.usdVndRate.toLocaleString('vi-VN')+'₫';
+    rateEl.style.display='';
+  }else if(S.curMode===2&&S.usdTwdRate>0){
+    rateEl.textContent='≈'+S.usdTwdRate.toFixed(1)+'$';
+    rateEl.title=S.rateSource+'  1 USDT = '+S.usdTwdRate.toFixed(2)+' TWD';
     rateEl.style.display='';
   }else{rateEl.style.display='none';}
 }
 
 function toggleCurrency(){
-  S.showVnd=!S.showVnd;
-  const btn=document.getElementById('curTogBtn');
-  btn.classList.toggle('vnd',S.showVnd);
-  document.getElementById('curLabel').style.fontWeight=S.showVnd?'400':'800';
-  document.getElementById('curLabel2').style.fontWeight=S.showVnd?'800':'400';
+  S.curMode=(S.curMode+1)%3;
   updRateDisplay();
-  // Re-render all visible data
   rerenderAll();
-  toast(S.showVnd?'💱 Hiển thị VND (tỷ giá trực tiếp)':'💵 Hiển thị USDC');
-}
-
-function toVND(usdcAmt){
-  if(!S.showVnd||!S.usdVndRate)return null;
-  return usdcAmt*S.usdVndRate;
+  const msgs=['💵 Hiển thị USDC','💱 Hiển thị VND (tỷ giá thực)','🟢 Hiển thị TWD (Đài Loan)'];
+  toast(msgs[S.curMode]);
 }
 
 function fmtVND(n){
-  if(isNaN(n))return '0 ₫';
+  if(isNaN(n))return '0₫';
   return n.toLocaleString('vi-VN',{maximumFractionDigits:0})+'₫';
 }
 
-// Display helper: returns formatted string in current currency
-function fmtCur(usdcAmt,showSign=false){
-  if(S.showVnd&&S.usdVndRate>0){
-    const v=usdcAmt*S.usdVndRate;
-    const s=showSign?(v>=0?'+':''):'';
-    return s+fmtVND(v);
-  }
-  if(showSign)return(usdcAmt>=0?'+$':'-$')+Math.abs(usdcAmt).toFixed(2);
+function fmtTWD(n){
+  if(isNaN(n))return 'NT$0';
+  return 'NT$'+n.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});
+}
+
+// Core formatter — all amounts go through here
+function fmtCurVal(usdcAmt){
+  if(S.curMode===1&&S.usdVndRate>0)return fmtVND(usdcAmt*S.usdVndRate);
+  if(S.curMode===2&&S.usdTwdRate>0)return fmtTWD(usdcAmt*S.usdTwdRate);
   return '$'+fmt$(usdcAmt);
 }
 
-function fmtCurAbs(usdcAmt){
-  if(S.showVnd&&S.usdVndRate>0)return fmtVND(Math.abs(usdcAmt)*S.usdVndRate);
-  return '$'+Math.abs(usdcAmt).toFixed(2);
+function fmtCurSigned(usdcAmt){
+  const sign=usdcAmt>=0?'+':'-';
+  const abs=Math.abs(usdcAmt);
+  if(S.curMode===1&&S.usdVndRate>0)return sign+fmtVND(abs*S.usdVndRate);
+  if(S.curMode===2&&S.usdTwdRate>0)return sign+fmtTWD(abs*S.usdTwdRate);
+  return(usdcAmt>=0?'+$':'-$')+abs.toFixed(2);
 }
 
-function fmtCurSigned(usdcAmt){
-  if(S.showVnd&&S.usdVndRate>0){
-    const v=usdcAmt*S.usdVndRate;
-    return(v>=0?'+':'')+fmtVND(v);
-  }
-  return(usdcAmt>=0?'+$':'-$')+Math.abs(usdcAmt).toFixed(2);
+function fmtCurAbs(usdcAmt){
+  return fmtCurVal(Math.abs(usdcAmt));
 }
+
+// Legacy alias
+function fmtCur(usdcAmt){return fmtCurVal(usdcAmt);}
+
+function curLabel(){return['USDC','VND','TWD'][S.curMode];}
 
 function rerenderAll(){
-  // Update hero currency symbol
+  // Update hero symbol
   const sym=document.getElementById('hCurSym');
-  if(sym)sym.textContent=S.showVnd?'':'$';
-  // Dashboard: re-render positions with cached data
-  if(S._lastPositions!==undefined){renderPositions(S._lastPositions);}
-  if(S._lastOrders!==undefined){renderOrders(S._lastOrders);}
+  if(sym)sym.textContent=S.curMode===2?'':''; // hidden when VND/TWD includes symbol
+  // Positions & orders
+  if(S._lastPositions!==undefined)renderPositions(S._lastPositions);
+  if(S._lastOrders!==undefined)renderOrders(S._lastOrders);
   // Hero numbers
   if(S._totalBalance!==undefined){
-    document.getElementById('hTotal').textContent=S.showVnd&&S.usdVndRate>0?fmtVND(S._totalBalance*S.usdVndRate):fmt$(S._totalBalance);
-    document.getElementById('hUsdc').textContent=S.showVnd&&S.usdVndRate>0?fmtVND((S._usdcPure||0)*S.usdVndRate):'$'+fmt$(S._usdcPure||0);
+    document.getElementById('hTotal').textContent=S.curMode===0?fmt$(S._totalBalance):fmtCurVal(S._totalBalance);
+    document.getElementById('hUsdc').textContent=S.curMode===0?'$'+fmt$(S._usdcPure||0):fmtCurVal(S._usdcPure||0);
     const hOp=document.getElementById('hOpenPnl');
     if(hOp){hOp.textContent=fmtCurSigned(S._unrealPnl||0);hOp.style.color=(S._unrealPnl||0)>=0?'var(--g)':'var(--r)';}
   }
-  // History summary
   renderCalMonthly();renderTrades();
-  // Fund page
   if(S.fundsLoaded){renderFundSummary();renderFund();}
 }
 
