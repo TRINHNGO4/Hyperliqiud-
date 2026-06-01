@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>HL Tracker</title>
+<title>OKX Tracker</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -303,7 +303,7 @@ html,body{height:100%;background:var(--bg0);color:var(--t1);font-family:var(--sa
 
 <!-- TOPBAR -->
 <div class="topbar">
-  <div class="logo"><b>HL</b> Tracker</div>
+  <div class="logo"><b>OKX</b> Tracker</div>
   <div class="topbar-r">
     <div class="pill-live"><span class="ldot"></span>LIVE</div>
     <div class="cur-tog" id="curTogBtn" onclick="toggleCurrency()" title="Bấm để chuyển đổi USDC → VND → TWD">
@@ -411,18 +411,14 @@ html,body{height:100%;background:var(--bg0);color:var(--t1);font-family:var(--sa
   <!-- ═══ SETTINGS ═══ -->
   <div class="page" id="pg-set">
     <div style="height:2px"></div>
-    <div class="sg"><div class="sg-l">Ví Hyperliquid</div>
+    <div class="sg"><div class="sg-l">OKX API</div>
       <div class="sc">
-        <div class="sr"><div class="s-ico" style="background:#eff6ff;color:var(--a)">🔗</div><div class="s-body"><div class="s-lbl">Địa chỉ ví</div><div class="s-sub" id="walPrev">Chưa cài đặt</div></div></div>
-        <div class="sinw"><input class="inp" id="walInp" placeholder="0x... địa chỉ ví EVM"><button class="btn" onclick="saveWal()">Lưu & tải dữ liệu</button></div>
-      </div>
-    </div>
-    <div class="sg"><div class="sg-l">Google tích hợp</div>
-      <div class="sc">
-        <div class="sr"><div class="s-ico" style="background:#f0fdf4;color:var(--g)">📜</div><div class="s-body"><div class="s-lbl">AppScript URL</div><div class="s-sub" id="scrPrev">Chưa cài đặt</div></div></div>
-        <div class="sinw"><input class="inp" id="scrInp" placeholder="https://script.google.com/..."><button class="btn" onclick="saveScr()">Lưu Script</button></div>
-        <div class="sr" style="border-top:1px solid var(--b1)"><div class="s-ico" style="background:#fffbeb;color:var(--y)">📊</div><div class="s-body"><div class="s-lbl">Google Sheets</div><div class="s-sub" id="shtPrev">Chưa cài đặt</div></div></div>
-        <div class="sinw"><input class="inp" id="shtInp" placeholder="https://docs.google.com/spreadsheets/..."><button class="btn" onclick="saveSht()">Lưu Sheets</button><button class="btn ghost" style="margin-top:5px" onclick="openSht()">Mở Trang tính ↗</button></div>
+        <div class="sr"><div class="s-ico" style="background:#eff6ff;color:var(--a)">🔑</div><div class="s-body"><div class="s-lbl">API Key</div><div class="s-sub" id="walPrev">Chưa cài đặt</div></div></div>
+        <div class="sinw"><input class="inp" id="walInp" placeholder="API Key OKX..."><button class="btn" onclick="saveWal()">Lưu</button></div>
+        <div class="sr" style="border-top:1px solid var(--b1)"><div class="s-ico" style="background:#fdf4ff;color:var(--p)">🔒</div><div class="s-body"><div class="s-lbl">Secret Key</div><div class="s-sub" id="secPrev">Chưa cài đặt</div></div></div>
+        <div class="sinw"><input class="inp" type="password" id="secInp" placeholder="Secret Key OKX..."><button class="btn" onclick="saveSec()">Lưu</button></div>
+        <div class="sr" style="border-top:1px solid var(--b1)"><div class="s-ico" style="background:#fefce8;color:var(--y)">🔐</div><div class="s-body"><div class="s-lbl">Passphrase</div><div class="s-sub" id="ppPrev">Chưa cài đặt</div></div></div>
+        <div class="sinw"><input class="inp" type="password" id="ppInp" placeholder="Passphrase OKX..."><button class="btn" onclick="savePP()">Lưu & tải dữ liệu</button></div>
       </div>
     </div>
     <div class="sg"><div class="sg-l">Tự động làm mới</div>
@@ -440,7 +436,7 @@ html,body{height:100%;background:var(--bg0);color:var(--t1);font-family:var(--sa
     </div>
     <div class="sg"><div class="sg-l">Ứng dụng</div>
       <div class="sc">
-        <div class="sr"><div class="s-ico" style="background:var(--bg3);color:var(--t2)">ℹ️</div><div class="s-body"><div class="s-lbl">Phiên bản</div><div class="s-sub">HL Tracker v5.0 — Light Theme</div></div></div>
+        <div class="sr"><div class="s-ico" style="background:var(--bg3);color:var(--t2)">ℹ️</div><div class="s-body"><div class="s-lbl">Phiên bản</div><div class="s-sub">OKX Tracker v1.0 — Light Theme</div></div></div>
         <div class="sinw"><button class="btn red" onclick="clearAll()">🗑 Xóa toàn bộ dữ liệu</button></div>
       </div>
     </div>
@@ -503,30 +499,44 @@ html,body{height:100%;background:var(--bg0);color:var(--t1);font-family:var(--sa
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
-const S={
-  wallet:_ls('hl_w')||'',script:_ls('hl_s')||'',sheet:_ls('hl_sh')||'',
-  auto:_ls('hl_a')!=='false',int:+(_ls('hl_i')||1000),
-  filter:'all',
-  calY:new Date().getFullYear(),calM:new Date().getMonth(),
-  fills:[],dpnl:{},openDay:null,timer:null,tickTimer:null,curTab:'dash',
-  fundsLoaded:false,funds:[],fundFilter:'all',
-  // currency
-  curMode:0, usdVndRate:0, usdTwdRate:0, rateLoaded:false, rateSource:''
-};
 function _ls(k,v){if(v===undefined)return localStorage.getItem(k);v===null?localStorage.removeItem(k):localStorage.setItem(k,v);}
+const S={
+  wallet:_ls('hl_w')||'',
+  secret:_ls('hl_sec')||'',
+  passphrase:_ls('hl_pp')||'',
+  auto:_ls('hl_a')!=='false',
+  int:+(_ls('hl_i')||5000),
+  filter:'all',
+  calY:new Date().getFullYear(), calM:new Date().getMonth(),
+  fills:[], dpnl:{}, openDay:null,
+  timer:null, tickTimer:null, curTab:'dash',
+  fundsLoaded:false, funds:[], fundFilter:'all',
+  // currency toggle: 0=USDC 1=VND 2=TWD
+  curMode:0, usdVndRate:0, usdTwdRate:0, rateLoaded:false, rateSource:'',
+  // cached data for re-render
+  _totalBalance:0, _usdcPure:0, _unrealPnl:0,
+  _lastPositions:[], _lastOrders:[],
+};
 
 // ══════════════════════════════════════════
 // CLOCK
 // ══════════════════════════════════════════
 function startClock(){
   clearInterval(S.tickTimer);
-  S.tickTimer=setInterval(()=>{document.getElementById('tsEl').textContent=new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});},1000);
+  S.tickTimer=setInterval(()=>{
+    document.getElementById('tsEl').textContent=
+      new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  },1000);
 }
 
 // ══════════════════════════════════════════
 // TOAST
 // ══════════════════════════════════════════
-function toast(msg,ms=2500){const el=document.getElementById('toastEl');el.textContent=msg;el.classList.add('on');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('on'),ms);}
+function toast(msg,ms=2500){
+  const el=document.getElementById('toastEl');
+  el.textContent=msg; el.classList.add('on');
+  clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('on'),ms);
+}
 
 // ══════════════════════════════════════════
 // NAV
@@ -543,107 +553,213 @@ function goTab(n){
 }
 
 // ══════════════════════════════════════════
-// API
+// OKX API HELPERS
 // ══════════════════════════════════════════
-async function hl(body){
-  try{const r=await fetch('https://api.hyperliquid.xyz/info',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});return r.ok?await r.json():null;}catch{return null;}
+
+// Sign + call OKX private REST endpoint
+async function okx(method, path, params={}){
+  if(!S.wallet||!S.secret||!S.passphrase)return null;
+  try{
+    const ts = new Date().toISOString();
+    let qs = '';
+    let bodyStr = '';
+    if(method==='GET' && Object.keys(params).length){
+      qs = '?' + new URLSearchParams(params).toString();
+    } else if(method==='POST'){
+      bodyStr = JSON.stringify(params);
+    }
+    const preSign = ts + method + path + qs + bodyStr;
+    const enc = new TextEncoder();
+    const cryptoKey = await crypto.subtle.importKey(
+      'raw', enc.encode(S.secret),
+      {name:'HMAC',hash:'SHA-256'}, false, ['sign']
+    );
+    const sigBuf = await crypto.subtle.sign('HMAC', cryptoKey, enc.encode(preSign));
+    const sig = btoa(String.fromCharCode(...new Uint8Array(sigBuf)));
+
+    const headers = {
+      'Content-Type':'application/json',
+      'OK-ACCESS-KEY': S.wallet,
+      'OK-ACCESS-SIGN': sig,
+      'OK-ACCESS-TIMESTAMP': ts,
+      'OK-ACCESS-PASSPHRASE': S.passphrase,
+    };
+    const url = 'https://www.okx.com' + path + qs;
+    const res = await fetch(url, {
+      method,
+      headers,
+      body: method==='POST' ? bodyStr : undefined,
+    });
+    if(!res.ok) return null;
+    const d = await res.json();
+    if(d.code !== '0'){ console.warn('OKX error', d.code, d.msg, path); return null; }
+    return d.data;
+  } catch(e){
+    console.error('OKX request failed', path, e);
+    return null;
+  }
 }
+
+// Extract coin name from OKX instId: "BTC-USDT-SWAP" → "BTC"
+function parseCoin(instId=''){
+  return instId.split('-')[0];
+}
+
+// ══════════════════════════════════════════
+// COIN COLOURS
+// ══════════════════════════════════════════
+const CX={
+  BTC:'#f7931a',ETH:'#627eea',SOL:'#9945ff',BNB:'#f3ba2f',
+  DOGE:'#c2a633',XRP:'#346aa9',AVAX:'#e84142',LINK:'#2a5ada',
+  ARB:'#28a0f0',OP:'#ff0420',SUI:'#4da2ff',TIA:'#7b5bf5',
+  INJ:'#00b2ff',APT:'#00b5d4',WIF:'#c17a3a',PEPE:'#3da639',
+  WLD:'#222222',TON:'#0088cc',NEAR:'#00c08b',ADA:'#0d1e30',
+  DOT:'#e6007a',MATIC:'#8247e5',LTC:'#bfbbbb',ATOM:'#6f4e7c',
+  AAVE:'#b6509e',UNI:'#ff007a',FIL:'#0090ff',HYPE:'#22c55e',
+  OKB:'#2563eb',
+};
+function cx(c){return CX[c]||'#2563eb';}
 
 // ══════════════════════════════════════════
 // DASHBOARD
-// Total balance = spotClearinghouseState USDC total
-// (= wallet USDC including collateral + unrealized PnL already embedded)
-// This matches app.hyperliquid.xyz "Total Balance" shown as 298.43
 // ══════════════════════════════════════════
 async function loadDash(){
-  if(!S.wallet){heroEmpty();setEmp('posList','🔗','Nhập địa chỉ ví ở Cài đặt');setEmp('ooWrap','📋','Chưa có lệnh');return;}
-
-  const[perp,spot,orders]=await Promise.all([
-    hl({type:'clearinghouseState',user:S.wallet}),
-    hl({type:'spotClearinghouseState',user:S.wallet}),
-    hl({type:'openOrders',user:S.wallet})
-  ]);
-  if(!perp){heroEmpty();setEmp('posList','⚠️','Lỗi kết nối API');setEmp('ooWrap','⚠️','Lỗi API');return;}
-  // ── BALANCE ─────────────────────────────────────────────
-  // spotClearinghouseState → balances[USDC].total = tổng số dư USDC
-  // (bao gồm số dư ví + collateral đang dùng cho perp)
-  // Đây là con số "Total Balance" hiển thị trên app.hyperliquid.xyz = 298.43
-  let spotUsdcTotal=0, spotUsdcAvail=0;
-  if(spot?.balances){
-    const u=spot.balances.find(b=>b.coin==='USDC');
-    if(u){
-      spotUsdcTotal=parseFloat(u.total||0);       // 298.43 ← tổng số dư
-      spotUsdcAvail=parseFloat(u.hold!=null?(u.total-u.hold):u.total||0);
-    }
+  if(!S.wallet||!S.secret||!S.passphrase){
+    heroEmpty();
+    setEmp('posList','🔑','Nhập đủ API Key, Secret Key & Passphrase ở Cài đặt');
+    setEmp('ooWrap','📋','Chưa cài đặt API');
+    return;
   }
 
-  const positions=(perp.assetPositions||[]).filter(p=>parseFloat(p.position?.szi||0)!==0);
-  const unrealPnl=positions.reduce((s,p)=>s+parseFloat(p.position?.unrealizedPnl||0),0);
-  const withdrawable=parseFloat(perp.withdrawable||0);
-  const marginUsed=parseFloat(perp.marginSummary?.totalMarginUsed||0);
+  // Fetch in parallel: account balance, swap positions, pending orders
+  const [balData, posData, ordData] = await Promise.all([
+    okx('GET','/api/v5/account/balance'),
+    okx('GET','/api/v5/account/positions',{instType:'SWAP'}),
+    okx('GET','/api/v5/trade/orders-pending',{instType:'SWAP'}),
+  ]);
 
-  // Tổng số dư hiển thị = spotUsdcTotal (nếu có) hoặc fallback accountValue
-  const totalBalance = spotUsdcTotal > 0
-    ? spotUsdcTotal
-    : parseFloat(perp.marginSummary?.accountValue||0);
+  // ── BALANCE ──────────────────────────────────────────
+  // OKX /account/balance returns array; first element = unified account
+  // totalEq = total equity in USD
+  // details = per-currency breakdown
+  if(!balData){
+    heroEmpty();
+    setEmp('posList','⚠️','Lỗi kết nối OKX — kiểm tra API Key & Passphrase');
+    setEmp('ooWrap','⚠️','Lỗi API');
+    return;
+  }
+  const acc = balData[0] || {};
+  const totalBalance = parseFloat(acc.totalEq || 0);
+  // cashBal of USDT/USDC = available stable balance
+  const details = acc.details || [];
+  const usdtBal = parseFloat(details.find(d=>d.ccy==='USDT')?.cashBal || 0);
+  const usdcBal = parseFloat(details.find(d=>d.ccy==='USDC')?.cashBal || 0);
+  const stableBal = usdtBal + usdcBal || totalBalance;
 
-  // Số dư USDC thuần (không tính unrealized) = totalBalance - unrealPnl
-  const usdcPure = totalBalance - unrealPnl;
+  // ── POSITIONS ────────────────────────────────────────
+  // OKX /account/positions: each item = one open position
+  const rawPos = (posData||[]).filter(p=>parseFloat(p.pos||0)!==0);
+  const unrealPnl = rawPos.reduce((s,p)=>s+parseFloat(p.upl||0), 0);
 
-  // Cache for re-render on currency toggle
-  S._totalBalance=totalBalance; S._usdcPure=usdcPure; S._unrealPnl=unrealPnl;
+  // Build position objects for renderPositions
+  const positions = rawPos.map(p=>{
+    const coin = parseCoin(p.instId);
+    const sz   = parseFloat(p.pos||0);      // positive=long, negative=short
+    const isL  = sz > 0;
+    return {
+      _okx: true,
+      position:{
+        coin,
+        instId:    p.instId,
+        szi:       sz,
+        entryPx:   parseFloat(p.avgPx||0),
+        markPx:    parseFloat(p.markPx||0),
+        unrealizedPnl: parseFloat(p.upl||0),
+        // ROE = upl / (notional / leverage)
+        returnOnEquity: parseFloat(p.uplRatio||0),
+        leverage:  {value: p.lever||'--'},
+        liquidationPx: p.liqPx ? parseFloat(p.liqPx) : null,
+        // imr = initial margin required (used as "margin used")
+        marginUsed: parseFloat(p.imr||0),
+        posMode:   p.posSide||'net',   // 'long'|'short'|'net'
+        // funding fee since open (cumulative)
+        cumFunding:{ sinceOpen: parseFloat(p.fee||0) + parseFloat(p.fundingFee||0) },
+      }
+    };
+  });
 
-  // Hero
-  document.getElementById('hTotal').textContent=S.curMode===0?fmt$(totalBalance):fmtCurVal(totalBalance);
-  document.getElementById('hUsdc').textContent=S.curMode===0?'$'+fmt$(usdcPure>0?usdcPure:totalBalance):fmtCurVal(usdcPure>0?usdcPure:totalBalance);
-  const hOp=document.getElementById('hOpenPnl');
-  if(hOp){hOp.textContent=fmtCurSigned(unrealPnl);hOp.style.color=unrealPnl>=0?'var(--g)':'var(--r)';}
+  // ── OPEN ORDERS ──────────────────────────────────────
+  // OKX side: 'buy' | 'sell'
+  const orders = (ordData||[]).map(o=>({
+    _okx:true,
+    coin:      parseCoin(o.instId),
+    instId:    o.instId,
+    side:      o.side==='buy'?'B':'A',
+    limitPx:   o.px,
+    sz:        o.sz,
+    orderType: o.ordType,   // 'limit'|'market'|'oco'|'trigger'
+    reduceOnly: o.reduceOnly==='true',
+    tpPrice:   o.tpTriggerPx,
+    slPrice:   o.slTriggerPx,
+  }));
 
-  document.getElementById('posTs').textContent=new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  S._lastPositions=positions; S._lastOrders=Array.isArray(orders)?orders:[];
+  // ── CACHE + RENDER ───────────────────────────────────
+  S._totalBalance = totalBalance;
+  S._usdcPure     = stableBal;
+  S._unrealPnl    = unrealPnl;
+  S._lastPositions= positions;
+  S._lastOrders   = orders;
+
+  document.getElementById('hTotal').textContent   = S.curMode===0 ? fmt$(totalBalance) : fmtCurVal(totalBalance);
+  document.getElementById('hUsdc').textContent    = S.curMode===0 ? '$'+fmt$(stableBal) : fmtCurVal(stableBal);
+  const hOp = document.getElementById('hOpenPnl');
+  if(hOp){ hOp.textContent = fmtCurSigned(unrealPnl); hOp.style.color = unrealPnl>=0?'var(--g)':'var(--r)'; }
+
+  document.getElementById('posTs').textContent = new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   renderPositions(positions);
-  renderOrders(Array.isArray(orders)?orders:[]);
+  renderOrders(orders);
 }
 
 // ══════════════════════════════════════════
-// POSITIONS — Exchange style
+// RENDER POSITIONS
 // ══════════════════════════════════════════
-const CX={BTC:'#f7931a',ETH:'#627eea',SOL:'#9945ff',BNB:'#f3ba2f',DOGE:'#c2a633',XRP:'#346aa9',AVAX:'#e84142',LINK:'#2a5ada',ARB:'#28a0f0',OP:'#ff0420',SUI:'#4da2ff',TIA:'#7b5bf5',INJ:'#00b2ff',APT:'#00b5d4',WIF:'#c17a3a',PEPE:'#3da639',WLD:'#222222',HYPE:'#22c55e'};
-function cx(c){return CX[c]||'#2563eb';}
-
 function renderPositions(positions){
-  const w=document.getElementById('posList');
-  if(!positions.length){w.innerHTML=`<div class="empty"><div class="ei">📊</div><div class="et">Không có vị thế đang mở</div></div>`;return;}
-  w.innerHTML=positions.map(p=>{
-    const pos=p.position,coin=pos.coin,szi=parseFloat(pos.szi),isL=szi>0;
-    const entry=parseFloat(pos.entryPx||0);
-    const upnl=parseFloat(pos.unrealizedPnl||0);
-    const lev=pos.leverage?.value||'--';
-    const liq=pos.liquidationPx?parseFloat(pos.liquidationPx).toFixed(pos.liquidationPx>1?2:4):'--';
-    const mUsed=parseFloat(pos.marginUsed||0);
-    const roe=parseFloat(pos.returnOnEquity||0)*100;
-    const sz=Math.abs(szi);
-    const c=cx(coin);
-    const pnlColor=upnl>=0?'var(--g)':'var(--r)';
-    const roeColor=roe>=0?'var(--g)':'var(--r)';
-    // Mark price from position if available
-    const markPx=parseFloat(pos.markPx||pos.currentPrice||0);
+  const w = document.getElementById('posList');
+  if(!positions.length){
+    w.innerHTML=`<div class="empty"><div class="ei">📊</div><div class="et">Không có vị thế đang mở</div></div>`;
+    return;
+  }
+  w.innerHTML = positions.map(p=>{
+    const pos   = p.position;
+    const coin  = pos.coin;
+    const szi   = pos.szi;
+    const isL   = szi > 0;
+    const entry = pos.entryPx;
+    const upnl  = pos.unrealizedPnl;
+    const lev   = pos.leverage?.value || '--';
+    const liq   = pos.liquidationPx ? parseFloat(pos.liquidationPx).toFixed(entry>1?2:4) : '--';
+    const mUsed = pos.marginUsed;
+    const roe   = parseFloat(pos.returnOnEquity||0)*100;
+    const sz    = Math.abs(szi);
+    const c     = cx(coin);
+    const markPx= pos.markPx||0;
+    const pnlColor = upnl>=0?'var(--g)':'var(--r)';
+    const roeColor = roe>=0?'var(--g)':'var(--r)';
 
-    // Build metrics
+    // Determine margin mode from posMode
+    const marginMode = pos.posMode==='cross'?'Cross':'Isolated';
+
     const metrics=[];
     metrics.push({l:`Size (${coin})`, v: sz.toFixed(sz<1?4:sz<100?3:2)});
-    if(mUsed>0) metrics.push({l:'Margin ('+curLabel()+')', v:S.curMode===0?'$'+mUsed.toFixed(2):fmtCurVal(mUsed)});
-    metrics.push({l:'Entry Price', v: entry<1?entry.toFixed(4):'$'+entry.toFixed(2)});
-    if(markPx>0) metrics.push({l:'Mark Price', v: markPx<1?markPx.toFixed(4):'$'+markPx.toFixed(2)});
-    if(liq!=='--') metrics.push({l:'Liq. Price', v: liq<1?liq:'$'+liq});
-
-    // Pad to multiple of 3
+    if(mUsed>0) metrics.push({l:'Margin ('+curLabel()+')', v: S.curMode===0?'$'+mUsed.toFixed(2):fmtCurVal(mUsed)});
+    metrics.push({l:'Entry Price', v: entry<1?entry.toFixed(5):'$'+entry.toFixed(2)});
+    if(markPx>0) metrics.push({l:'Mark Price', v: markPx<1?markPx.toFixed(5):'$'+markPx.toFixed(2)});
+    if(liq!=='--') metrics.push({l:'Liq. Price', v: parseFloat(liq)<1?liq:'$'+liq});
     while(metrics.length%3!==0) metrics.push({l:'',v:''});
 
-    // Funding: cumFunding from API
-    const cumFunding=parseFloat(pos.cumFunding?.sinceOpen||0);
-    const cumFundingStr=fmtCurSigned(cumFunding);
-    const cumFundingColor=cumFunding>=0?'var(--g)':'var(--r)';
+    const cumFunding   = pos.cumFunding?.sinceOpen || 0;
+    const cumFundingStr= fmtCurSigned(cumFunding);
+    const cumFundingColor = cumFunding>=0?'var(--g)':'var(--r)';
 
     return `<div class="pc">
       <div class="pc-header">
@@ -652,15 +768,14 @@ function renderPositions(positions){
           <div>
             <div class="pc-title">${coin}<span>USDT</span></div>
             <div class="pc-tags">
-              <span class="pc-tag perp">Perp</span>
-              <span class="pc-tag cross">Cross</span>
+              <span class="pc-tag perp">Swap</span>
+              <span class="pc-tag cross">${marginMode}</span>
               <span class="pc-tag lev">${lev}X</span>
             </div>
           </div>
         </div>
         <div class="pc-side-badge ${isL?'L':'S'}">${isL?'LONG':'SHORT'}</div>
       </div>
-
       <div class="pc-pnl-hero">
         <div class="pc-pnl-hero-item">
           <div class="pc-phl">PNL (${curLabel()})</div>
@@ -671,15 +786,12 @@ function renderPositions(positions){
           <div class="pc-phv" style="color:${roeColor}">${roe>=0?'+':''}${roe.toFixed(2)}%</div>
         </div>
       </div>
-
       <div class="pc-metrics">
         ${metrics.map(m=>m.l?`<div class="pc-m"><div class="pc-ml">${m.l}</div><div class="pc-mv">${m.v}</div></div>`:`<div class="pc-m"></div>`).join('')}
       </div>
-
-      <!-- Funding row -->
       <div class="pc-funding">
         <div class="pc-funding-item">
-          <span class="pc-funding-l">Funding tích lũy</span>
+          <span class="pc-funding-l">Phí funding tích lũy</span>
           <span class="pc-funding-v" style="color:${cumFundingColor}">${cumFundingStr}</span>
         </div>
       </div>
@@ -688,54 +800,84 @@ function renderPositions(positions){
 }
 
 // ══════════════════════════════════════════
-// OPEN ORDERS
+// RENDER OPEN ORDERS
 // ══════════════════════════════════════════
 function renderOrders(orders){
-  document.getElementById('ooMeta').textContent=orders.length?orders.length+' lệnh':'';
-  const w=document.getElementById('ooWrap');
-  if(!orders.length){w.innerHTML=`<div class="empty"><div class="ei">📋</div><div class="et">Không có lệnh đang đặt</div></div>`;return;}
+  document.getElementById('ooMeta').textContent = orders.length ? orders.length+' lệnh' : '';
+  const w = document.getElementById('ooWrap');
+  if(!orders.length){
+    w.innerHTML=`<div class="empty"><div class="ei">📋</div><div class="et">Không có lệnh đang đặt</div></div>`;
+    return;
+  }
   w.innerHTML=`<div class="oo-card">${orders.map(o=>{
-    const coin=(o.coin||'???').replace('-PERP','');
-    const isL=o.side==='B';
-    const px=parseFloat(o.limitPx||o.triggerPx||0);
-    const sz=parseFloat(o.sz||0);
-    const c=cx(coin);
-    const ot=(o.orderType||'limit').toLowerCase();
-    const tag=ot.includes('tp')?'tp':ot.includes('sl')?'sl':'lim';
-    const lbl=tag==='tp'?'TP':tag==='sl'?'SL':'LIMIT';
+    const coin  = o.coin;
+    const isL   = o.side==='B';
+    const px    = parseFloat(o.limitPx||o.tpPrice||o.slPrice||0);
+    const sz    = parseFloat(o.sz||0);
+    const c     = cx(coin);
+    const ot    = (o.orderType||'limit').toLowerCase();
+    // Detect TP/SL from orderType or by having tpPrice/slPrice
+    const tag   = ot.includes('tp')||o.tpPrice?'tp': ot.includes('sl')||o.slPrice?'sl':'lim';
+    const lbl   = tag==='tp'?'TP':tag==='sl'?'SL':'LIMIT';
     return `<div class="oo-item">
       <div class="oo-l">
         <div class="oo-ico" style="background:${c}15;color:${c}">${coin.slice(0,4)}</div>
         <div>
           <div style="display:flex;align-items:center;gap:5px">
-            <div class="oo-coin">${coin}-PERP</div>
+            <div class="oo-coin">${coin}-SWAP</div>
             <div class="oo-tag ${tag}">${lbl}</div>
           </div>
-          <div class="oo-inf"><span style="color:${isL?'var(--g)':'var(--r)'}">${isL?'Buy / Long':'Sell / Short'}</span>${o.reduceOnly?' · reduce':''}</div>
+          <div class="oo-inf">
+            <span style="color:${isL?'var(--g)':'var(--r)'}">${isL?'Buy / Long':'Sell / Short'}</span>
+            ${o.reduceOnly?' · reduce':''}
+          </div>
         </div>
       </div>
       <div class="oo-r">
-        <div class="oo-px" style="color:${isL?'var(--g)':'var(--r)'}">${px<1?'$'+px.toFixed(4):'$'+px.toFixed(2)}</div>
-        <div class="oo-sz">${sz.toFixed(4)} ${coin}</div>
+        <div class="oo-px" style="color:${isL?'var(--g)':'var(--r)'}">${px<1?'$'+px.toFixed(5):'$'+px.toFixed(2)}</div>
+        <div class="oo-sz">${sz} ${coin}</div>
       </div>
     </div>`;
   }).join('')}</div>`;
 }
 
 // ══════════════════════════════════════════
-// HISTORY
+// HISTORY — OKX /api/v5/trade/fills-history
+// Returns recent fills (trades executed) with PnL
 // ══════════════════════════════════════════
 async function loadHistory(){
-  if(!S.wallet){S.fills=[];S.dpnl={};renderTrades();return;}
-  const data=await hl({type:'userFills',user:S.wallet});
-  S.fills=Array.isArray(data)?data.sort((a,b)=>b.time-a.time):[];
+  if(!S.wallet||!S.secret||!S.passphrase){ S.fills=[]; S.dpnl={}; renderTrades(); return; }
+  // fills-history supports up to 3 months; use fills for the last 100
+  // For full history paginate with after/before params using ordId
+  const data = await okx('GET','/api/v5/trade/fills-history',{instType:'SWAP',limit:'100'});
+  const raw  = Array.isArray(data) ? data : [];
+
+  // OKX fill fields:
+  // instId, side(buy/sell), fillPx, fillSz, pnl, ts (ms), fee, feeCcy, tradeId
+  S.fills = raw.map(f=>({
+    coin:      parseCoin(f.instId),
+    instId:    f.instId,
+    side:      f.side==='buy'?'B':'A',
+    px:        f.fillPx,
+    sz:        f.fillSz,
+    closedPnl: f.pnl || '0',
+    time:      parseInt(f.ts||0),
+    fee:       f.fee,
+    feeCcy:    f.feeCcy,
+  })).sort((a,b)=>b.time-a.time);
+
+  // Build daily PnL map
   S.dpnl={};
-  S.fills.forEach(t=>{const k=dk(new Date(t.time));S.dpnl[k]=(S.dpnl[k]||0)+parseFloat(t.closedPnl||0);});
-  if(S.curTab==='hist'){renderCal();renderCalMonthly();renderTrades();}
+  S.fills.forEach(t=>{
+    const k = dk(new Date(t.time));
+    S.dpnl[k] = (S.dpnl[k]||0) + parseFloat(t.closedPnl||0);
+  });
+
+  if(S.curTab==='hist'){ renderCal(); renderCalMonthly(); renderTrades(); }
 }
 
 // ══════════════════════════════════════════
-// CALENDAR — Daily PNL style
+// CALENDAR — Daily PNL
 // ══════════════════════════════════════════
 function calShift(dir){
   S.calM+=dir;
@@ -743,12 +885,11 @@ function calShift(dir){
   if(S.calM<0){S.calM=11;S.calY--;}
   S.openDay=null;
   const pop=document.getElementById('dayPop');
-  if(pop)pop.classList.remove('open');
-  renderCal();renderCalMonthly();
+  if(pop) pop.classList.remove('open');
+  renderCal(); renderCalMonthly();
 }
 
 function renderCal(){
-  // Title: "2024-06" style like screenshot
   const yStr=String(S.calY);
   const mStr=String(S.calM+1).padStart(2,'0');
   document.getElementById('calTitle').textContent=yStr+'-'+mStr;
@@ -763,14 +904,9 @@ function renderCal(){
     const pnl=S.dpnl[k];
     const isToday=now.getFullYear()===S.calY&&now.getMonth()===S.calM&&now.getDate()===d;
     let cls='dc';
-    if(pnl!==undefined){
-      if(pnl>0)cls+=' win';
-      else if(pnl<0)cls+=' loss';
-      else cls+=' zero';
-    }
-    if(isToday)cls+=' today';
+    if(pnl!==undefined){ if(pnl>0)cls+=' win'; else if(pnl<0)cls+=' loss'; else cls+=' zero'; }
+    if(isToday) cls+=' today';
 
-    // PnL display: +0.00 format like screenshot
     let pnlTxt='';
     if(pnl!==undefined){
       if(S.curMode===1&&S.usdVndRate>0){
@@ -778,13 +914,11 @@ function renderCal(){
         const absM=Math.abs(vndVal/1000000);
         pnlTxt=(pnl>=0?'+':'-')+(absM>=1?absM.toFixed(1)+'M':(Math.abs(vndVal/1000)).toFixed(0)+'k');
       } else if(S.curMode===2&&S.usdTwdRate>0){
-        const twdVal=pnl*S.usdTwdRate;
-        pnlTxt=(pnl>=0?'+':'-')+Math.abs(twdVal).toFixed(0)+'$';
+        pnlTxt=(pnl>=0?'+':'-')+Math.abs(pnl*S.usdTwdRate).toFixed(0)+'$';
       } else {
         pnlTxt=(pnl>=0?'+':'')+pnl.toFixed(2);
       }
     }
-
     html+=`<div class="${cls}" onclick="togDay(${d},'${k}')">
       <div class="dc-num">${d}</div>
       ${pnlTxt?`<div class="dc-pnl">${pnlTxt}</div>`:''}
@@ -801,24 +935,19 @@ function renderCalMonthly(){
   });
   const mn=['T1','T2','T3','T4','T5','T6','T7','T8','T9','T10','T11','T12'];
   const cmL=document.getElementById('cmLabel');
-  if(cmL)cmL.textContent='Tổng '+mn[S.calM]+'/'+S.calY;
+  if(cmL) cmL.textContent='Tổng '+mn[S.calM]+'/'+S.calY;
   const cmD=document.getElementById('cmDetail');
-  if(cmD)cmD.textContent=wins+' ngày lãi · '+loss+' ngày lỗ';
+  if(cmD) cmD.textContent=wins+' ngày lãi · '+loss+' ngày lỗ';
   const el=document.getElementById('cmVal');
-  if(el){el.textContent=S.curMode===0?pnlFmt(tot):fmtCurSigned(tot);el.style.color=tot>=0?'var(--g)':'var(--r)';}
+  if(el){ el.textContent=S.curMode===0?pnlFmt(tot):fmtCurSigned(tot); el.style.color=tot>=0?'var(--g)':'var(--r)'; }
 }
 
-// MONTH/YEAR PICKER
+// Month/year picker
 let pickerY=new Date().getFullYear();
 function openMonthPicker(){
   const p=document.getElementById('monthPicker');
-  if(p.style.display==='none'){
-    pickerY=S.calY;
-    renderPicker();
-    p.style.display='block';
-  } else {
-    p.style.display='none';
-  }
+  if(p.style.display==='none'){ pickerY=S.calY; renderPicker(); p.style.display='block'; }
+  else { p.style.display='none'; }
 }
 function renderPicker(){
   document.getElementById('mpYear').textContent=pickerY;
@@ -829,17 +958,16 @@ function renderPicker(){
 }
 function changePickerYear(dir){pickerY+=dir;renderPicker();}
 function selectMonth(m){
-  S.calY=pickerY;S.calM=m;
+  S.calY=pickerY; S.calM=m;
   document.getElementById('monthPicker').style.display='none';
   S.openDay=null;
-  const pop=document.getElementById('dayPop');if(pop)pop.classList.remove('open');
-  renderCal();renderCalMonthly();
+  const pop=document.getElementById('dayPop'); if(pop) pop.classList.remove('open');
+  renderCal(); renderCalMonthly();
 }
-// Close picker on outside click
 document.addEventListener('click',function(e){
   const p=document.getElementById('monthPicker');
   const btn=document.getElementById('calTitle');
-  if(p&&!p.contains(e.target)&&e.target!==btn)p.style.display='none';
+  if(p&&!p.contains(e.target)&&e.target!==btn) p.style.display='none';
 });
 
 function togDay(d,key){
@@ -855,7 +983,8 @@ function togDay(d,key){
     <div style="font-size:11.5px;font-weight:700">${d}/${S.calM+1}/${S.calY} · <span style="color:${pc};font-family:var(--mono)">${S.curMode===0?pnlFmt(pnl||0):fmtCurSigned(pnl||0)}</span> · ${trs.length} lệnh</div>
     <div class="dp-x" onclick="S.openDay=null;document.getElementById('dayPop').classList.remove('open')">✕</div>
   </div>
-  ${trs.slice(0,8).map(t=>{const v=parseFloat(t.closedPnl||0),c=cx(t.coin);
+  ${trs.slice(0,8).map(t=>{
+    const v=parseFloat(t.closedPnl||0), c=cx(t.coin);
     return `<div class="dp-row">
       <div style="display:flex;align-items:center;gap:6px">
         <div style="width:22px;height:22px;border-radius:5px;background:${c}15;color:${c};display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:8px;font-weight:800">${(t.coin||'?').slice(0,3)}</div>
@@ -868,106 +997,123 @@ function togDay(d,key){
 }
 
 // ══════════════════════════════════════════
-// TRADES
+// TRADES LIST
 // ══════════════════════════════════════════
-function setF(el){document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));el.classList.add('on');S.filter=el.dataset.f;renderTrades();}
+function setF(el){
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on'); S.filter=el.dataset.f; renderTrades();
+}
 
 function renderTrades(){
   let tr=[...S.fills];
-  if(S.filter==='win')tr=tr.filter(t=>parseFloat(t.closedPnl||0)>0);
-  else if(S.filter==='loss')tr=tr.filter(t=>parseFloat(t.closedPnl||0)<0);
-  else if(S.filter==='long')tr=tr.filter(t=>t.side==='B');
-  else if(S.filter==='short')tr=tr.filter(t=>t.side==='A');
+  if(S.filter==='win')   tr=tr.filter(t=>parseFloat(t.closedPnl||0)>0);
+  else if(S.filter==='loss')  tr=tr.filter(t=>parseFloat(t.closedPnl||0)<0);
+  else if(S.filter==='long')  tr=tr.filter(t=>t.side==='B');
+  else if(S.filter==='short') tr=tr.filter(t=>t.side==='A');
   document.getElementById('tCount').textContent=tr.length+' lệnh';
   const w=document.getElementById('tList');
-  if(!tr.length){w.innerHTML=`<div class="empty" style="border-radius:0;border:none;border-top:1px solid var(--b1)"><div class="ei">📭</div><div class="et">${S.wallet?'Không có lệnh':'Nhập địa chỉ ví'}</div></div>`;return;}
+  if(!tr.length){
+    w.innerHTML=`<div class="empty" style="border-radius:0;border:none;border-top:1px solid var(--b1)"><div class="ei">📭</div><div class="et">${S.wallet?'Không có lệnh':'Nhập API Key OKX'}</div></div>`;
+    return;
+  }
   w.innerHTML=tr.slice(0,100).map(t=>{
-    const v=parseFloat(t.closedPnl||0),c=cx(t.coin);
+    const v=parseFloat(t.closedPnl||0), c=cx(t.coin);
     const dt=new Date(t.time);
     const ds=`${dt.getDate()}/${dt.getMonth()+1}/${dt.getFullYear()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
     return `<div class="t-item">
       <div style="display:flex;align-items:center;gap:9px">
         <div class="t-ico" style="background:${c}15;color:${c}">${(t.coin||'?').slice(0,4)}</div>
-        <div><div class="t-coin">${t.coin}-PERP</div><div class="t-sub">${t.side==='B'?'Long':'Short'} · $${parseFloat(t.px||0).toFixed(2)} · ${parseFloat(t.sz||0).toFixed(4)}</div></div>
+        <div>
+          <div class="t-coin">${t.coin}-SWAP</div>
+          <div class="t-sub">${t.side==='B'?'Long':'Short'} · $${parseFloat(t.px||0).toFixed(2)} · ${parseFloat(t.sz||0)}</div>
+        </div>
       </div>
-      <div><div class="t-pnl" style="color:${v>=0?'var(--g)':'var(--r)'}">${fmtCurSigned(v)}</div><div class="t-dt">${ds}</div></div>
+      <div>
+        <div class="t-pnl" style="color:${v>=0?'var(--g)':'var(--r)'}">${fmtCurSigned(v)}</div>
+        <div class="t-dt">${ds}</div>
+      </div>
     </div>`;
   }).join('');
 }
 
-
 // ══════════════════════════════════════════
-// NẠP / RÚT (userNonFundingLedgerUpdates)
+// NẠP / RÚT — OKX asset endpoints
 // ══════════════════════════════════════════
 async function loadFund(){
   const wrap=document.getElementById('fundList');
-  if(!S.wallet){wrap.innerHTML=`<div class="empty"><div class="ei">🔗</div><div class="et">Nhập địa chỉ ví ở Cài đặt</div></div>`;return;}
+  if(!S.wallet||!S.secret||!S.passphrase){
+    wrap.innerHTML=`<div class="empty"><div class="ei">🔑</div><div class="et">Nhập đủ API Key OKX ở Cài đặt</div></div>`;
+    return;
+  }
   wrap.innerHTML=`<div class="spinrow"><div class="sp"></div>Đang tải...</div>`;
-  // startTime = 0 để lấy toàn bộ lịch sử
-  const data=await hl({type:'userNonFundingLedgerUpdates',user:S.wallet,startTime:0});
+
+  const [depData, witData] = await Promise.all([
+    okx('GET','/api/v5/asset/deposit-history',{limit:'50'}),
+    okx('GET','/api/v5/asset/withdrawal-history',{limit:'50'}),
+  ]);
+
   S.fundsLoaded=true;
-  if(!data||!Array.isArray(data)){wrap.innerHTML=`<div class="empty"><div class="ei">⚠️</div><div class="et">Không thể tải dữ liệu</div></div>`;return;}
-  // Filter chỉ deposit/withdraw (type: deposit | withdraw | internalTransfer | spotTransfer)
-  S.funds=data.filter(x=>{
-    const t=(x.delta?.type||'').toLowerCase();
-    return t==='deposit'||t==='withdraw'||t==='accountclassification'||t==='vaultdeposit'||t==='vaultwithdraw'||t.includes('deposit')||t.includes('withdraw');
-  }).sort((a,b)=>b.time-a.time);
+
+  // OKX deposit fields: ccy, amt, from, to, txId, ts, state
+  // OKX withdrawal fields: ccy, amt, chain, txId, ts, state, fee
+  const deps = (depData||[]).map(x=>({
+    delta:{type:'deposit', usdc:x.amt, hash:x.txId, ccy:x.ccy},
+    time: parseInt(x.ts||0),
+  }));
+  const wits = (witData||[]).map(x=>({
+    delta:{type:'withdraw', usdc:x.amt, hash:x.txId, ccy:x.ccy},
+    time: parseInt(x.ts||0),
+  }));
+  S.funds = [...deps,...wits].sort((a,b)=>b.time-a.time);
   renderFundSummary();
   renderFund();
 }
 
 function setFundF(el){
   document.querySelectorAll('[data-fw]').forEach(c=>c.classList.remove('on'));
-  el.classList.add('on');
-  S.fundFilter=el.dataset.fw;
-  renderFund();
+  el.classList.add('on'); S.fundFilter=el.dataset.fw; renderFund();
 }
 
 function renderFundSummary(){
   let dep=0,depCnt=0,wit=0,witCnt=0;
   S.funds.forEach(x=>{
     const t=(x.delta?.type||'').toLowerCase();
-    const amt=parseFloat(x.delta?.usdc||x.delta?.amount||0);
-    if(t.includes('deposit')){dep+=Math.abs(amt);depCnt++;}
-    else if(t.includes('withdraw')){wit+=Math.abs(amt);witCnt++;}
+    const amt=parseFloat(x.delta?.usdc||0);
+    if(t==='deposit'){dep+=Math.abs(amt);depCnt++;}
+    else if(t==='withdraw'){wit+=Math.abs(amt);witCnt++;}
   });
-  document.getElementById('fundDeposit').textContent=S.curMode===0?'$'+fmt$(dep):fmtCurVal(dep);
-  document.getElementById('fundDepositCnt').textContent=depCnt+' lần';
-  document.getElementById('fundWithdraw').textContent=S.curMode===0?'$'+fmt$(wit):fmtCurVal(wit);
-  document.getElementById('fundWithdrawCnt').textContent=witCnt+' lần';
-  document.getElementById('fundCount').textContent=S.funds.length+' giao dịch';
+  document.getElementById('fundDeposit').textContent    = S.curMode===0?'$'+fmt$(dep):fmtCurVal(dep);
+  document.getElementById('fundDepositCnt').textContent = depCnt+' lần';
+  document.getElementById('fundWithdraw').textContent   = S.curMode===0?'$'+fmt$(wit):fmtCurVal(wit);
+  document.getElementById('fundWithdrawCnt').textContent= witCnt+' lần';
+  document.getElementById('fundCount').textContent      = S.funds.length+' giao dịch';
 }
 
 function renderFund(){
   let list=[...S.funds];
-  if(S.fundFilter==='deposit') list=list.filter(x=>(x.delta?.type||'').toLowerCase().includes('deposit'));
-  else if(S.fundFilter==='withdraw') list=list.filter(x=>(x.delta?.type||'').toLowerCase().includes('withdraw'));
+  if(S.fundFilter==='deposit')  list=list.filter(x=>x.delta?.type==='deposit');
+  else if(S.fundFilter==='withdraw') list=list.filter(x=>x.delta?.type==='withdraw');
 
   const wrap=document.getElementById('fundList');
   if(!list.length){
     wrap.innerHTML=`<div class="empty"><div class="ei">📭</div><div class="et">Không có giao dịch</div></div>`;
     return;
   }
-  const typeLabel=t=>{
-    const tl=t.toLowerCase();
-    if(tl.includes('deposit'))return{lbl:'Nạp',cls:'g'};
-    if(tl.includes('withdraw'))return{lbl:'Rút',cls:'r'};
-    return{lbl:t,cls:''};
-  };
   wrap.innerHTML=`<div>${list.map(x=>{
-    const t=x.delta?.type||'unknown';
-    const amt=parseFloat(x.delta?.usdc||x.delta?.amount||0);
-    const {lbl,cls}=typeLabel(t);
-    const dt=new Date(x.time);
-    const ds=`${dt.getDate()}/${dt.getMonth()+1}/${dt.getFullYear()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
-    const isPos=lbl==='Nạp';
-    const hash=x.hash||x.delta?.hash||'';
+    const t   = x.delta?.type||'';
+    const amt = parseFloat(x.delta?.usdc||0);
+    const ccy = x.delta?.ccy||'USDT';
+    const hash= x.delta?.hash||'';
+    const isPos = t==='deposit';
+    const lbl = isPos?'Nạp':'Rút';
+    const dt  = new Date(x.time);
+    const ds  = `${dt.getDate()}/${dt.getMonth()+1}/${dt.getFullYear()} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
     return `<div class="t-item">
       <div style="display:flex;align-items:center;gap:9px">
         <div style="width:36px;height:36px;border-radius:10px;background:${isPos?'rgba(5,150,105,.12)':'rgba(220,38,38,.1)'};display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">${isPos?'⬇️':'⬆️'}</div>
         <div>
-          <div class="t-coin">${lbl} USDC</div>
-          <div class="t-sub">${ds}${hash?` · ${hash.slice(0,8)}…`:''}</div>
+          <div class="t-coin">${lbl} ${ccy}</div>
+          <div class="t-sub">${ds}${hash?' · '+hash.slice(0,8)+'…':''}</div>
         </div>
       </div>
       <div style="text-align:right">
@@ -981,10 +1127,28 @@ function renderFund(){
 // ══════════════════════════════════════════
 // SETTINGS
 // ══════════════════════════════════════════
-function saveWal(){const v=document.getElementById('walInp').value.trim();if(!v||!v.startsWith('0x')){toast('⚠️ Địa chỉ phải bắt đầu bằng 0x');return;}S.wallet=v;_ls('hl_w',v);document.getElementById('walPrev').textContent=v.slice(0,8)+'...'+v.slice(-6);toast('✅ Đã lưu — đang tải...');doRefresh();}
-function saveScr(){const v=document.getElementById('scrInp').value.trim();S.script=v;_ls('hl_s',v);document.getElementById('scrPrev').textContent=v?'Đã cài đặt ✓':'Chưa cài đặt';toast('✅ Đã lưu Script URL');}
-function saveSht(){const v=document.getElementById('shtInp').value.trim();S.sheet=v;_ls('hl_sh',v);document.getElementById('shtPrev').textContent=v?'Đã cài đặt ✓':'Chưa cài đặt';toast('✅ Đã lưu Sheets URL');}
-function openSht(){if(!S.sheet){toast('⚠️ Chưa có link Sheets');return;}window.open(S.sheet,'_blank');}
+function saveWal(){
+  const v=document.getElementById('walInp').value.trim();
+  if(!v){toast('⚠️ Nhập API Key OKX');return;}
+  S.wallet=v;_ls('hl_w',v);
+  document.getElementById('walPrev').textContent=v.slice(0,8)+'...';
+  toast('✅ Đã lưu API Key');
+}
+function saveSec(){
+  const v=document.getElementById('secInp').value.trim();
+  if(!v)return;
+  S.secret=v;_ls('hl_sec',v);
+  document.getElementById('secPrev').textContent='Đã cài đặt ✓';
+  toast('✅ Đã lưu Secret Key');
+}
+function savePP(){
+  const v=document.getElementById('ppInp').value.trim();
+  if(!v)return;
+  S.passphrase=v;_ls('hl_pp',v);
+  document.getElementById('ppPrev').textContent='Đã cài đặt ✓';
+  toast('✅ Đã lưu — đang tải...');
+  doRefresh();
+}
 function togAuto(el){el.classList.toggle('on');S.auto=el.classList.contains('on');_ls('hl_a',S.auto);updAutoLbl();setupTimer();toast(S.auto?'⚡ Bật real-time':'⏸ Tắt');}
 function chgInt(){S.int=+document.getElementById('intSel').value;_ls('hl_i',S.int);updAutoLbl();setupTimer();}
 function updAutoLbl(){const m={1000:'1 giây',5000:'5 giây',10000:'10 giây',30000:'30 giây'};document.getElementById('autoLbl').textContent=(S.auto?'Đang bật':'Đã tắt')+' · mỗi '+(m[S.int]||S.int+'ms');}
@@ -996,9 +1160,9 @@ function setupTimer(){clearInterval(S.timer);if(S.auto)S.timer=setInterval(doRef
 // ══════════════════════════════════════════
 let _busy=false;
 async function doRefresh(){
-  if(_busy)return;_busy=true;
+  if(_busy)return; _busy=true;
   document.getElementById('rfBtn').classList.add('spin');
-  await Promise.all([loadDash(),loadHistory()]);
+  await Promise.all([loadDash(), loadHistory()]);
   document.getElementById('rfBtn').classList.remove('spin');
   _busy=false;
 }
@@ -1009,147 +1173,120 @@ async function doRefresh(){
 function fmt$(n){return isNaN(n)?'0.00':n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function pnlFmt(v){return(v>=0?'+$':'-$')+Math.abs(v).toFixed(2);}
 function dk(d){return`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;}
-function dateFmt(d){return d.toISOString().split('T')[0];}
 function setEmp(id,ic,tx){document.getElementById(id).innerHTML=`<div class="empty"><div class="ei">${ic}</div><div class="et">${tx}</div></div>`;}
-function heroEmpty(){['hTotal','hUsdc','hWith'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent='--';});const u=document.getElementById('hUnreal');if(u){u.textContent='--';u.style.color='var(--t3)';}const b=document.getElementById('hUpnlBadge');if(b){b.textContent='-- UPNL';b.className='upnl-badge up';}}
+function heroEmpty(){['hTotal','hUsdc'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent='--';});const hOp=document.getElementById('hOpenPnl');if(hOp){hOp.textContent='--';hOp.style.color='var(--t3)';}}
 
 // ══════════════════════════════════════════
 // CURRENCY CONVERSION  USDC → VND → TWD
 // curMode: 0=USDC  1=VND  2=TWD
 // ══════════════════════════════════════════
 async function fetchRate(){
-  // Fetch VND + TWD together from CoinGecko
   try{
     const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=vnd,twd');
     if(r.ok){
       const d=await r.json();
       if(d.tether){
-        if(d.tether.vnd){S.usdVndRate=d.tether.vnd;}
-        if(d.tether.twd){S.usdTwdRate=d.tether.twd;}
+        if(d.tether.vnd) S.usdVndRate=d.tether.vnd;
+        if(d.tether.twd) S.usdTwdRate=d.tether.twd;
         if(S.usdVndRate>0||S.usdTwdRate>0){S.rateLoaded=true;S.rateSource='CoinGecko';updRateDisplay();return;}
       }
     }
   }catch{}
-  // Fallback: open.er-api for both
   try{
     const r=await fetch('https://open.er-api.com/v6/latest/USD');
     if(r.ok){
       const d=await r.json();
       if(d.rates){
-        if(d.rates.VND)S.usdVndRate=d.rates.VND;
-        if(d.rates.TWD)S.usdTwdRate=d.rates.TWD;
-        S.rateLoaded=true;S.rateSource='ER-API';updRateDisplay();return;
+        if(d.rates.VND) S.usdVndRate=d.rates.VND;
+        if(d.rates.TWD) S.usdTwdRate=d.rates.TWD;
+        S.rateLoaded=true; S.rateSource='ER-API'; updRateDisplay(); return;
       }
     }
   }catch{}
-  // Static fallback
   S.usdVndRate=S.usdVndRate||25400;
   S.usdTwdRate=S.usdTwdRate||32.5;
-  S.rateLoaded=true;S.rateSource='tĩnh';updRateDisplay();
-}
-
-function curRate(){
-  return S.curMode===1?S.usdVndRate:(S.curMode===2?S.usdTwdRate:1);
+  S.rateLoaded=true; S.rateSource='tĩnh'; updRateDisplay();
 }
 
 function updRateDisplay(){
   const btn=document.getElementById('curTogBtn');
   if(!btn)return;
-  // Update button mode class
   btn.className='cur-tog'+(S.curMode>0?' mode'+S.curMode:'');
-  // Update single label text
   const lbl=document.getElementById('curLabelTxt');
-  if(lbl)lbl.textContent=['USDC','VND','TWD'][S.curMode];
-  // Rate hint next to label
+  if(lbl) lbl.textContent=['USDC','VND','TWD'][S.curMode];
   let rateEl=document.getElementById('curRateHint');
   if(!rateEl){rateEl=document.createElement('span');rateEl.id='curRateHint';rateEl.className='cur-rate';btn.appendChild(rateEl);}
   if(S.curMode===1&&S.usdVndRate>0){
     rateEl.textContent='≈'+(S.usdVndRate/1000).toFixed(0)+'k';
-    rateEl.title=S.rateSource+'  1 USDT = '+S.usdVndRate.toLocaleString('vi-VN')+'₫';
+    rateEl.title=S.rateSource+'  1 USDT='+S.usdVndRate.toLocaleString('vi-VN')+'₫';
     rateEl.style.display='';
-  }else if(S.curMode===2&&S.usdTwdRate>0){
+  } else if(S.curMode===2&&S.usdTwdRate>0){
     rateEl.textContent='≈'+S.usdTwdRate.toFixed(1)+'$';
-    rateEl.title=S.rateSource+'  1 USDT = '+S.usdTwdRate.toFixed(2)+' TWD';
+    rateEl.title=S.rateSource+'  1 USDT='+S.usdTwdRate.toFixed(2)+' TWD';
     rateEl.style.display='';
-  }else{rateEl.style.display='none';}
+  } else {
+    rateEl.style.display='none';
+  }
 }
 
 function toggleCurrency(){
   S.curMode=(S.curMode+1)%3;
   updRateDisplay();
   rerenderAll();
-  const msgs=['💵 Hiển thị USDC','💱 Hiển thị VND (tỷ giá thực)','🟢 Hiển thị TWD (Đài Loan)'];
+  const msgs=['💵 Hiển thị USDC','💱 Hiển thị VND','🟢 Hiển thị TWD'];
   toast(msgs[S.curMode]);
 }
 
-function fmtVND(n){
-  if(isNaN(n))return '0₫';
-  return n.toLocaleString('vi-VN',{maximumFractionDigits:0})+'₫';
-}
+function fmtVND(n){return isNaN(n)?'0₫':n.toLocaleString('vi-VN',{maximumFractionDigits:0})+'₫';}
+function fmtTWD(n){return isNaN(n)?'NT$0':'NT$'+n.toLocaleString('en-US',{maximumFractionDigits:0});}
 
-function fmtTWD(n){
-  if(isNaN(n))return 'NT$0';
-  return 'NT$'+n.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:0});
-}
-
-// Core formatter — all amounts go through here
 function fmtCurVal(usdcAmt){
-  if(S.curMode===1&&S.usdVndRate>0)return fmtVND(usdcAmt*S.usdVndRate);
-  if(S.curMode===2&&S.usdTwdRate>0)return fmtTWD(usdcAmt*S.usdTwdRate);
+  if(S.curMode===1&&S.usdVndRate>0) return fmtVND(usdcAmt*S.usdVndRate);
+  if(S.curMode===2&&S.usdTwdRate>0) return fmtTWD(usdcAmt*S.usdTwdRate);
   return '$'+fmt$(usdcAmt);
 }
-
 function fmtCurSigned(usdcAmt){
   const sign=usdcAmt>=0?'+':'-';
   const abs=Math.abs(usdcAmt);
-  if(S.curMode===1&&S.usdVndRate>0)return sign+fmtVND(abs*S.usdVndRate);
-  if(S.curMode===2&&S.usdTwdRate>0)return sign+fmtTWD(abs*S.usdTwdRate);
+  if(S.curMode===1&&S.usdVndRate>0) return sign+fmtVND(abs*S.usdVndRate);
+  if(S.curMode===2&&S.usdTwdRate>0) return sign+fmtTWD(abs*S.usdTwdRate);
   return(usdcAmt>=0?'+$':'-$')+abs.toFixed(2);
 }
-
-function fmtCurAbs(usdcAmt){
-  return fmtCurVal(Math.abs(usdcAmt));
-}
-
-// Legacy alias
-function fmtCur(usdcAmt){return fmtCurVal(usdcAmt);}
-
-function curLabel(){return['USDC','VND','TWD'][S.curMode];}
+function fmtCurAbs(usdcAmt){return fmtCurVal(Math.abs(usdcAmt));}
+function curLabel(){return['USDC','USDT','USDT'][S.curMode];}
 
 function rerenderAll(){
-  // Update hero symbol
   const sym=document.getElementById('hCurSym');
-  if(sym)sym.textContent=S.curMode===2?'':''; // hidden when VND/TWD includes symbol
-  // Positions & orders
-  if(S._lastPositions!==undefined)renderPositions(S._lastPositions);
-  if(S._lastOrders!==undefined)renderOrders(S._lastOrders);
-  // Hero numbers
+  if(sym) sym.textContent=S.curMode>0?'':'$';
+  if(S._lastPositions!==undefined) renderPositions(S._lastPositions);
+  if(S._lastOrders!==undefined)    renderOrders(S._lastOrders);
   if(S._totalBalance!==undefined){
     document.getElementById('hTotal').textContent=S.curMode===0?fmt$(S._totalBalance):fmtCurVal(S._totalBalance);
-    document.getElementById('hUsdc').textContent=S.curMode===0?'$'+fmt$(S._usdcPure||0):fmtCurVal(S._usdcPure||0);
+    document.getElementById('hUsdc').textContent =S.curMode===0?'$'+fmt$(S._usdcPure||0):fmtCurVal(S._usdcPure||0);
     const hOp=document.getElementById('hOpenPnl');
     if(hOp){hOp.textContent=fmtCurSigned(S._unrealPnl||0);hOp.style.color=(S._unrealPnl||0)>=0?'var(--g)':'var(--r)';}
   }
-  renderCalMonthly();renderTrades();
-  if(S.fundsLoaded){renderFundSummary();renderFund();}
+  renderCalMonthly(); renderTrades();
+  if(S.fundsLoaded){ renderFundSummary(); renderFund(); }
 }
 
 // ══════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════
 function init(){
-  if(S.wallet){document.getElementById('walInp').value=S.wallet;document.getElementById('walPrev').textContent=S.wallet.slice(0,8)+'...'+S.wallet.slice(-6);}
-  if(S.script){document.getElementById('scrInp').value=S.script;document.getElementById('scrPrev').textContent='Đã cài đặt ✓';}
-  if(S.sheet){document.getElementById('shtInp').value=S.sheet;document.getElementById('shtPrev').textContent='Đã cài đặt ✓';}
-  if(!S.auto)document.getElementById('autoTog').classList.remove('on');
+  if(S.wallet)    { document.getElementById('walInp').value=S.wallet;     document.getElementById('walPrev').textContent=S.wallet.slice(0,8)+'...'; }
+  if(S.secret)    { document.getElementById('secInp').value=S.secret;     document.getElementById('secPrev').textContent='Đã cài đặt ✓'; }
+  if(S.passphrase){ document.getElementById('ppInp').value=S.passphrase;  document.getElementById('ppPrev').textContent='Đã cài đặt ✓'; }
+  if(!S.auto) document.getElementById('autoTog').classList.remove('on');
   document.getElementById('intSel').value=S.int;
-  updAutoLbl();renderCal();renderCalMonthly();
-  setupTimer();startClock();
+  updAutoLbl(); renderCal(); renderCalMonthly();
+  setupTimer(); startClock();
   fetchRate();
-  setInterval(fetchRate, 60000); // cập nhật tỷ giá mỗi 60 giây
+  setInterval(fetchRate,60000);
   doRefresh();
 }
 init();
 </script>
+
 </body>
 </html>
