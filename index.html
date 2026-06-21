@@ -90,6 +90,7 @@
       display: flex; align-items: center; justify-content: flex-end; gap: 4px;
     }
     .pnl-value { font-family: var(--mono); font-size: 22px; font-weight: 700; margin-top: 4px; }
+    .roe-value { font-family: var(--mono); font-size: 17px; font-weight: 600; margin-top: 2px; }
 
     .pos-grid {
       display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px 8px;
@@ -374,7 +375,9 @@
 
 <script>
 (() => {
+  // ============ CONFIG ============
   const SHEET_URL = 'https://script.google.com/macros/s/AKfycbx0PXmE1EVVmlxInJamAwuBV_85drZSixwnGjvnWJT911PV6NhqQTqtuvHq8AuELsMjeQ/exec?token=okx_99cceb1e-92ca-464a-857f-ed992064185a';
+  
   const FX = { USDT: 1, VND: 25450, TWD: 32.1 };
   const CCY_SUFFIX = { USDT: ' USDT', VND: ' ₫', TWD: ' NT$' };
   const CCY_DEC = { USDT: 2, VND: 0, TWD: 1 };
@@ -406,10 +409,10 @@
     $('statusTxt').textContent = text || (state === 'live' ? 'Live' : state === 'busy' ? 'Đồng bộ...' : 'Off');
   }
 
-  function save() { try { localStorage.setItem('okx_v5_mob2', JSON.stringify({ api: S.api, ccy: S.ccy })); } catch(e) {} }
+  function save() { try { localStorage.setItem('okx_v8', JSON.stringify({ api: S.api, ccy: S.ccy })); } catch(e) {} }
   function load() {
     try {
-      const d = JSON.parse(localStorage.getItem('okx_v5_mob2')||'{}');
+      const d = JSON.parse(localStorage.getItem('okx_v8')||'{}');
       if (d.api) Object.assign(S.api, d.api);
       if (d.ccy) S.ccy = d.ccy;
     } catch(e) {}
@@ -489,6 +492,7 @@
     try {
       const res = await fetch(SHEET_URL);
       const json = await res.json();
+      
       S.history = (json.History || []).map(h => ({
         posId: h.posId, instId: h.instId, posSide: h.posSide,
         realizedPnl: parseFloat(h.realizedPnl)||0,
@@ -497,15 +501,18 @@
         closeTotalPos: parseFloat(h.closeTotalPos)||0, lever: h.lever,
         uTime: parseTime(h.uTime), cTime: parseTime(h.cTime)
       }));
+      
       S.deps = (json.Deposits || []).map(d => ({
         id: d.depId, ccy: d.ccy || 'USDT', amt: parseFloat(d.amt)||0,
-        cTime: parseTime(d.cTime), state: d.state, txId: d.txId || ''
+        cTime: parseTime(d.ts), state: d.state, txId: d.txId || ''
       }));
+      
       S.wds = (json.Withdrawals || []).map(w => ({
         id: w.wdId, ccy: w.ccy || 'USDT', amt: parseFloat(w.amt)||0,
         fee: parseFloat(w.fee)||0, cTime: parseTime(w.cTime),
         state: w.state, txId: w.txId || ''
       }));
+      
       rebuildMaps();
       renderCalendar();
       renderIncome();
@@ -541,6 +548,7 @@
         const marginMode = p.mgnMode || 'Cô lập';
         const leverage = p.lever || '1';
         const pnl = parseFloat(p.upl) || 0;
+        const roe = parseFloat(p.uplRatio) || 0; // uplRatio là ROE dạng số thập phân
         const volume = p.pos || '—';
         const margin = parseFloat(p.margin) || 0;
         const maintenanceMargin = parseFloat(p.mm) || 0;
@@ -568,6 +576,7 @@
                 <span style="font-size:14px;">↗</span>
               </div>
               <div class="pnl-value ${pc(pnl)}">${fmtPnL(pnl)}</div>
+              <div class="roe-value ${pc(roe)}">${(roe >= 0 ? '+' : '') + (roe * 100).toFixed(2)}%</div>
             </div>
           </div>
           <div class="pos-grid">
@@ -762,7 +771,7 @@
     S.api.pass = $('passphraseInput').value.trim(); S.api.proxy = $('proxyInput').value.trim();
     save(); $('settingsOverlay').classList.remove('open'); toast('Đã lưu cài đặt'); syncOverview();
   });
-  $('wipeData').addEventListener('click', ()=>{ if(confirm('Xoá dữ liệu?')) { localStorage.removeItem('okx_v5_mob2'); location.reload(); } });
+  $('wipeData').addEventListener('click', ()=>{ if(confirm('Xoá dữ liệu?')) { localStorage.removeItem('okx_v8'); location.reload(); } });
   $('prevMonth').addEventListener('click', ()=>{ S.calM--; if(S.calM<1){S.calM=12;S.calY--;} renderCalendar(); });
   $('nextMonth').addEventListener('click', ()=>{ S.calM++; if(S.calM>12){S.calM=1;S.calY++;} renderCalendar(); });
   $('txMonth').addEventListener('change', renderIncome);
