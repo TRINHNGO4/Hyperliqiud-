@@ -804,8 +804,8 @@
   renderOverview(); renderCalendar(); renderIncome();
   if(S.api.key) syncOverview();
   loadSheetData();
-  setInterval(syncOverview, 30000);
-  setInterval(loadSheetData, 300000);
+  setInterval(syncOverview, 10000);
+  setInterval(loadSheetData, 10000);
 })();
 </script>
 </body>
