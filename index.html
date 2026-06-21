@@ -90,7 +90,7 @@
       display: flex; align-items: center; justify-content: flex-end; gap: 4px;
     }
     .pnl-value { font-family: var(--mono); font-size: 22px; font-weight: 700; margin-top: 4px; }
-    .roe-value { font-family: var(--mono); font-size: 17px; font-weight: 600; margin-top: 2px; }
+    .roe-value { font-family: var(--mono); font-size: 16px; font-weight: 600; margin-top: 2px; }
 
     .pos-grid {
       display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px 8px;
@@ -409,38 +409,40 @@
     $('statusTxt').textContent = text || (state === 'live' ? 'Live' : state === 'busy' ? 'Đồng bộ...' : 'Off');
   }
 
-  function save() { try { localStorage.setItem('okx_v8', JSON.stringify({ api: S.api, ccy: S.ccy })); } catch(e) {} }
+  function save() { try { localStorage.setItem('okx_final_v1', JSON.stringify({ api: S.api, ccy: S.ccy })); } catch(e) {} }
   function load() {
     try {
-      const d = JSON.parse(localStorage.getItem('okx_v8')||'{}');
+      const d = JSON.parse(localStorage.getItem('okx_final_v1')||'{}');
       if (d.api) Object.assign(S.api, d.api);
       if (d.ccy) S.ccy = d.ccy;
     } catch(e) {}
   }
 
-  function fmtInt(usd) {
-    const v = usd * (FX[S.ccy] || 1);
-    return Math.round(v).toLocaleString('vi-VN');
-  }
-  function fmtDec(usd) {
-    const v = usd * (FX[S.ccy] || 1);
-    return v.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-  }
-  function fmtNum(usd) {
-    if (S.ccy === 'VND' || S.ccy === 'TWD') return fmtInt(usd);
-    return fmtDec(usd);
-  }
+  function fmtInt(usd) { const v = usd * (FX[S.ccy] || 1); return Math.round(v).toLocaleString('vi-VN'); }
+  function fmtDec(usd) { const v = usd * (FX[S.ccy] || 1); return v.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
+  function fmtNum(usd) { return (S.ccy === 'VND' || S.ccy === 'TWD') ? fmtInt(usd) : fmtDec(usd); }
   function fmtVal(usd) { return fmtNum(usd) + CCY_SUFFIX[S.ccy]; }
   function fmtPnL(usd) { const sign = usd >= 0 ? '+' : '−'; return sign + fmtNum(Math.abs(usd)) + CCY_SUFFIX[S.ccy]; }
   function pc(v) { return v >= 0 ? 'up' : 'dn'; }
   function toDay(ts) { return new Date(ts).toISOString().slice(0,10); }
+
+  // ✅ Hàm parseTime cải tiến – hỗ trợ nhiều định dạng
   function parseTime(val) {
     if (!val) return 0;
     if (typeof val === 'number') return val;
-    const d = new Date(val);
-    if (!isNaN(d.getTime())) return d.getTime();
     const n = parseInt(val);
     if (!isNaN(n) && n > 1e10) return n;
+    const d = new Date(val);
+    if (!isNaN(d.getTime())) return d.getTime();
+    const parts = val.split(/[\/\-\.]/);
+    if (parts.length === 3) {
+      const day = parseInt(parts[0]);
+      const month = parseInt(parts[1]) - 1;
+      const year = parseInt(parts[2]);
+      if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
+        return new Date(year, month, day).getTime();
+      }
+    }
     return 0;
   }
 
@@ -492,7 +494,14 @@
     try {
       const res = await fetch(SHEET_URL);
       const json = await res.json();
-      
+      console.log('Sheet response:', json);
+
+      if (json.error) {
+        console.error('Apps Script error:', json.error);
+        toast('Lỗi Apps Script: ' + json.error);
+        return;
+      }
+
       S.history = (json.History || []).map(h => ({
         posId: h.posId, instId: h.instId, posSide: h.posSide,
         realizedPnl: parseFloat(h.realizedPnl)||0,
@@ -501,23 +510,28 @@
         closeTotalPos: parseFloat(h.closeTotalPos)||0, lever: h.lever,
         uTime: parseTime(h.uTime), cTime: parseTime(h.cTime)
       }));
-      
+
+      // Map Deposits – ưu tiên cột 'ts' (Apps Script mới), fallback 'cTime'
       S.deps = (json.Deposits || []).map(d => ({
         id: d.depId, ccy: d.ccy || 'USDT', amt: parseFloat(d.amt)||0,
-        cTime: parseTime(d.ts), state: d.state, txId: d.txId || ''
+        cTime: parseTime(d.ts || d.cTime), state: d.state, txId: d.txId || ''
       }));
-      
+
       S.wds = (json.Withdrawals || []).map(w => ({
         id: w.wdId, ccy: w.ccy || 'USDT', amt: parseFloat(w.amt)||0,
         fee: parseFloat(w.fee)||0, cTime: parseTime(w.cTime),
         state: w.state, txId: w.txId || ''
       }));
-      
+
+      console.log('History:', S.history.length, 'Deposits:', S.deps.length, 'Withdrawals:', S.wds.length);
       rebuildMaps();
       renderCalendar();
       renderIncome();
       toast('Dữ liệu lịch sử đã cập nhật');
-    } catch(e) { console.error(e); }
+    } catch(e) {
+      console.error('loadSheetData error:', e);
+      toast('Lỗi tải dữ liệu: ' + e.message);
+    }
   }
 
   function rebuildMaps() {
@@ -548,7 +562,7 @@
         const marginMode = p.mgnMode || 'Cô lập';
         const leverage = p.lever || '1';
         const pnl = parseFloat(p.upl) || 0;
-        const roe = parseFloat(p.uplRatio) || 0; // uplRatio là ROE dạng số thập phân
+        const roe = parseFloat(p.uplRatio) || 0;
         const volume = p.pos || '—';
         const margin = parseFloat(p.margin) || 0;
         const maintenanceMargin = parseFloat(p.mm) || 0;
@@ -624,10 +638,9 @@
       mPnl += pnl;
       let cls = 'cell';
       if (key === today) cls += ' today';
-      const pnlColor = pc(pnl);
       html += `<div class="${cls}" onclick="showDayDetail('${key}')">
         <div class="cell-day">${d}</div>
-        <div class="cell-profit ${pnlColor}">${pnl!==0 ? (pnl>0?'+':'')+fmtNum(pnl) : ''}</div>
+        <div class="cell-profit ${pc(pnl)}">${pnl!==0 ? (pnl>0?'+':'')+fmtNum(pnl) : ''}</div>
       </div>`;
     }
     $('calGrid').innerHTML = html;
@@ -771,7 +784,7 @@
     S.api.pass = $('passphraseInput').value.trim(); S.api.proxy = $('proxyInput').value.trim();
     save(); $('settingsOverlay').classList.remove('open'); toast('Đã lưu cài đặt'); syncOverview();
   });
-  $('wipeData').addEventListener('click', ()=>{ if(confirm('Xoá dữ liệu?')) { localStorage.removeItem('okx_v8'); location.reload(); } });
+  $('wipeData').addEventListener('click', ()=>{ if(confirm('Xoá dữ liệu?')) { localStorage.removeItem('okx_final_v1'); location.reload(); } });
   $('prevMonth').addEventListener('click', ()=>{ S.calM--; if(S.calM<1){S.calM=12;S.calY--;} renderCalendar(); });
   $('nextMonth').addEventListener('click', ()=>{ S.calM++; if(S.calM>12){S.calM=1;S.calY++;} renderCalendar(); });
   $('txMonth').addEventListener('change', renderIncome);
