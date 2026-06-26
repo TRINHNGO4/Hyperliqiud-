@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>OKX Pro Dashboard</title>
-  <link rel="icon" type="image/png" href="stock.png">
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
   <style>
@@ -35,7 +34,7 @@
       display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; transition: 0.15s;
     }
     .btn-icon:active { background: var(--surface2); color: var(--text); transform: scale(0.92); }
-    .app { flex: 1; overflow: hidden; position: relative; }
+    .app { flex: 1; overflow: hidden; position: relative; display: flex; flex-direction: column; }
     .screen {
       display: none; flex-direction: column; gap: 14px; padding: 14px 12px calc(75px + var(--safe-b));
       overflow-y: auto; height: 100%; background: var(--bg);
@@ -64,7 +63,13 @@
     .panel { display: none; }
     .panel.active { display: block; }
 
-    /* Vị thế mở */
+    /* Vị thế mở - container có thể cuộn */
+    .positions-scroll-container {
+      max-height: 45vh; /* giới hạn chiều cao, có thể cuộn */
+      overflow-y: auto;
+      padding: 8px;
+      -webkit-overflow-scrolling: touch;
+    }
     .position-card {
       background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
       padding: 14px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);
@@ -90,7 +95,6 @@
       display: flex; align-items: center; justify-content: flex-end; gap: 4px;
     }
     .pnl-value { font-family: var(--mono); font-size: 22px; font-weight: 700; margin-top: 4px; }
-    .roe-value { font-family: var(--mono); font-size: 16px; font-weight: 600; margin-top: 2px; }
 
     .pos-grid {
       display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px 8px;
@@ -273,7 +277,9 @@
         <button class="tab" data-panel="ordersPanel">Lệnh chờ <span class="badge" id="ordCount">0</span></button>
       </div>
       <div class="panel active" id="positionsPanel">
-        <div id="posContainer" style="padding: 8px;"><div class="empty">Không có vị thế mở</div></div>
+        <div class="positions-scroll-container" id="posContainer">
+          <div class="empty">Không có vị thế mở</div>
+        </div>
       </div>
       <div class="panel" id="ordersPanel" style="overflow-x:auto;">
         <table><thead><tr><th>Coin</th><th>Loại</th><th>Giá đặt</th><th>SL</th><th>Trạng thái</th></tr></thead><tbody id="ordBody"><tr><td colspan="5" class="empty">Không có lệnh chờ</td></tr></tbody></table>
@@ -375,9 +381,7 @@
 
 <script>
 (() => {
-  // ============ CONFIG ============
   const SHEET_URL = 'https://script.google.com/macros/s/AKfycbx0PXmE1EVVmlxInJamAwuBV_85drZSixwnGjvnWJT911PV6NhqQTqtuvHq8AuELsMjeQ/exec?token=okx_99cceb1e-92ca-464a-857f-ed992064185a';
-  
   const FX = { USDT: 1, VND: 25450, TWD: 32.1 };
   const CCY_SUFFIX = { USDT: ' USDT', VND: ' ₫', TWD: ' NT$' };
   const CCY_DEC = { USDT: 2, VND: 0, TWD: 1 };
@@ -409,40 +413,38 @@
     $('statusTxt').textContent = text || (state === 'live' ? 'Live' : state === 'busy' ? 'Đồng bộ...' : 'Off');
   }
 
-  function save() { try { localStorage.setItem('okx_final_v1', JSON.stringify({ api: S.api, ccy: S.ccy })); } catch(e) {} }
+  function save() { try { localStorage.setItem('okx_v6_fixed', JSON.stringify({ api: S.api, ccy: S.ccy })); } catch(e) {} }
   function load() {
     try {
-      const d = JSON.parse(localStorage.getItem('okx_final_v1')||'{}');
+      const d = JSON.parse(localStorage.getItem('okx_v6_fixed')||'{}');
       if (d.api) Object.assign(S.api, d.api);
       if (d.ccy) S.ccy = d.ccy;
     } catch(e) {}
   }
 
-  function fmtInt(usd) { const v = usd * (FX[S.ccy] || 1); return Math.round(v).toLocaleString('vi-VN'); }
-  function fmtDec(usd) { const v = usd * (FX[S.ccy] || 1); return v.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}); }
-  function fmtNum(usd) { return (S.ccy === 'VND' || S.ccy === 'TWD') ? fmtInt(usd) : fmtDec(usd); }
+  function fmtInt(usd) {
+    const v = usd * (FX[S.ccy] || 1);
+    return Math.round(v).toLocaleString('vi-VN');
+  }
+  function fmtDec(usd) {
+    const v = usd * (FX[S.ccy] || 1);
+    return v.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  }
+  function fmtNum(usd) {
+    if (S.ccy === 'VND' || S.ccy === 'TWD') return fmtInt(usd);
+    return fmtDec(usd);
+  }
   function fmtVal(usd) { return fmtNum(usd) + CCY_SUFFIX[S.ccy]; }
   function fmtPnL(usd) { const sign = usd >= 0 ? '+' : '−'; return sign + fmtNum(Math.abs(usd)) + CCY_SUFFIX[S.ccy]; }
   function pc(v) { return v >= 0 ? 'up' : 'dn'; }
   function toDay(ts) { return new Date(ts).toISOString().slice(0,10); }
-
-  // ✅ Hàm parseTime cải tiến – hỗ trợ nhiều định dạng
   function parseTime(val) {
     if (!val) return 0;
     if (typeof val === 'number') return val;
-    const n = parseInt(val);
-    if (!isNaN(n) && n > 1e10) return n;
     const d = new Date(val);
     if (!isNaN(d.getTime())) return d.getTime();
-    const parts = val.split(/[\/\-\.]/);
-    if (parts.length === 3) {
-      const day = parseInt(parts[0]);
-      const month = parseInt(parts[1]) - 1;
-      const year = parseInt(parts[2]);
-      if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
-        return new Date(year, month, day).getTime();
-      }
-    }
+    const n = parseInt(val);
+    if (!isNaN(n) && n > 1e10) return n;
     return 0;
   }
 
@@ -494,14 +496,6 @@
     try {
       const res = await fetch(SHEET_URL);
       const json = await res.json();
-      console.log('Sheet response:', json);
-
-      if (json.error) {
-        console.error('Apps Script error:', json.error);
-        toast('Lỗi Apps Script: ' + json.error);
-        return;
-      }
-
       S.history = (json.History || []).map(h => ({
         posId: h.posId, instId: h.instId, posSide: h.posSide,
         realizedPnl: parseFloat(h.realizedPnl)||0,
@@ -510,28 +504,20 @@
         closeTotalPos: parseFloat(h.closeTotalPos)||0, lever: h.lever,
         uTime: parseTime(h.uTime), cTime: parseTime(h.cTime)
       }));
-
-      // Map Deposits – ưu tiên cột 'ts' (Apps Script mới), fallback 'cTime'
       S.deps = (json.Deposits || []).map(d => ({
         id: d.depId, ccy: d.ccy || 'USDT', amt: parseFloat(d.amt)||0,
-        cTime: parseTime(d.ts || d.cTime), state: d.state, txId: d.txId || ''
+        cTime: parseTime(d.cTime), state: d.state, txId: d.txId || ''
       }));
-
       S.wds = (json.Withdrawals || []).map(w => ({
         id: w.wdId, ccy: w.ccy || 'USDT', amt: parseFloat(w.amt)||0,
         fee: parseFloat(w.fee)||0, cTime: parseTime(w.cTime),
         state: w.state, txId: w.txId || ''
       }));
-
-      console.log('History:', S.history.length, 'Deposits:', S.deps.length, 'Withdrawals:', S.wds.length);
       rebuildMaps();
       renderCalendar();
       renderIncome();
       toast('Dữ liệu lịch sử đã cập nhật');
-    } catch(e) {
-      console.error('loadSheetData error:', e);
-      toast('Lỗi tải dữ liệu: ' + e.message);
-    }
+    } catch(e) { console.error(e); }
   }
 
   function rebuildMaps() {
@@ -562,7 +548,6 @@
         const marginMode = p.mgnMode || 'Cô lập';
         const leverage = p.lever || '1';
         const pnl = parseFloat(p.upl) || 0;
-        const roe = parseFloat(p.uplRatio) || 0;
         const volume = p.pos || '—';
         const margin = parseFloat(p.margin) || 0;
         const maintenanceMargin = parseFloat(p.mm) || 0;
@@ -590,7 +575,6 @@
                 <span style="font-size:14px;">↗</span>
               </div>
               <div class="pnl-value ${pc(pnl)}">${fmtPnL(pnl)}</div>
-              <div class="roe-value ${pc(roe)}">${(roe >= 0 ? '+' : '') + (roe * 100).toFixed(2)}%</div>
             </div>
           </div>
           <div class="pos-grid">
@@ -638,9 +622,10 @@
       mPnl += pnl;
       let cls = 'cell';
       if (key === today) cls += ' today';
+      const pnlColor = pc(pnl);
       html += `<div class="${cls}" onclick="showDayDetail('${key}')">
         <div class="cell-day">${d}</div>
-        <div class="cell-profit ${pc(pnl)}">${pnl!==0 ? (pnl>0?'+':'')+fmtNum(pnl) : ''}</div>
+        <div class="cell-profit ${pnlColor}">${pnl!==0 ? (pnl>0?'+':'')+fmtNum(pnl) : ''}</div>
       </div>`;
     }
     $('calGrid').innerHTML = html;
@@ -784,7 +769,7 @@
     S.api.pass = $('passphraseInput').value.trim(); S.api.proxy = $('proxyInput').value.trim();
     save(); $('settingsOverlay').classList.remove('open'); toast('Đã lưu cài đặt'); syncOverview();
   });
-  $('wipeData').addEventListener('click', ()=>{ if(confirm('Xoá dữ liệu?')) { localStorage.removeItem('okx_final_v1'); location.reload(); } });
+  $('wipeData').addEventListener('click', ()=>{ if(confirm('Xoá dữ liệu?')) { localStorage.removeItem('okx_v6_fixed'); location.reload(); } });
   $('prevMonth').addEventListener('click', ()=>{ S.calM--; if(S.calM<1){S.calM=12;S.calY--;} renderCalendar(); });
   $('nextMonth').addEventListener('click', ()=>{ S.calM++; if(S.calM>12){S.calM=1;S.calY++;} renderCalendar(); });
   $('txMonth').addEventListener('change', renderIncome);
@@ -826,8 +811,8 @@
   renderOverview(); renderCalendar(); renderIncome();
   if(S.api.key) syncOverview();
   loadSheetData();
-  setInterval(syncOverview, 10000);
-  setInterval(loadSheetData, 10000);
+  setInterval(syncOverview, 30000);
+  setInterval(loadSheetData, 3000);
 })();
 </script>
 </body>
